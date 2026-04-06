@@ -1,5 +1,6 @@
 # InternAngular
-
+Note:
+version 0.03 : Implement data binding
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.6.
 
 ## Development server
