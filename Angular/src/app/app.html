@@ -186,7 +186,17 @@
 <main class="main">
   <!-- <app-hello></app-hello> -->
   <!-- structuredirective></structuredirective> -->
-  <structuredirectiveNgForOf></structuredirectiveNgForOf>
+  <!--<structuredirectiveNgForOf></structuredirectiveNgForOf> -->
+  <app-progress-bar
+    [progress]="50"
+    [backgroundColor]="'#9e9e9e'"
+    [progressColor]="'#2e8b57'"
+  >
+  </app-progress-bar>
+  <app-author-list></app-author-list>
+  <app-author-detail>
+  </app-author-detail>
+
   <div class="content">
     <div class="left-side">
       <svg

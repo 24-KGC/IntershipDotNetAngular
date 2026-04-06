@@ -3,11 +3,13 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Version
 
-version 0.04 : Implement structure directive day 3 to 6.
+version 0.05: Implement component interaction day 7,8.
 
 ## Changelogs
 
-version 0.03 : Implement data binding.
+version 0.04: Implement structure directive day 3 to 6.
+version 0.03: Implement data binding.
+
 
 ## Development server
 
