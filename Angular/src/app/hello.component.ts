@@ -11,7 +11,6 @@ import { FormsModule, NgModel } from '@angular/forms';
     <input type="text" [(ngModel)]="user.name" />
     <input type="text" [value]="user.name" />
     <button (click)="showInfo()">Click me!</button>
-
   `,
 })
 export class HelloComponent {
