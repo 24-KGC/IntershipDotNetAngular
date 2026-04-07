@@ -1,59 +1,119 @@
-# ModernAngular
+# StudyBites
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.6.
+This project is created for the purpose of practice implementing Angular's basic features.
+Here are the ideas and goals
 
-## Development server
+## 1.Component
 
-To start a local development server, run:
+- `AppComponent` (shell)
+- `NavbarComponent`
+- `DashboardComponent`
+- `TasksPageComponent`
+- `TaskListComponent`
+- `TaskItemComponent`
+- `TaskFormComponent`
+- `RecipesPageComponent`
+- `RecipeListComponent`
+- `RecipeCardComponent`
+- `RecipeDetailComponent`
+- `NotFoundComponent`
 
-```bash
-ng serve
-```
+## 2.Routing
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- `/dashboard`
+- `/tasks`
+- `/recipes`
+- `/recipes/:id`
+- `**` → `NotFoundComponent`
 
-## Code scaffolding
+## 3.Forms
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+**Reactive Forms** for `TaskFormComponent`:
 
-```bash
-ng generate component component-name
-```
+- fields: `title`, `topic`, `dueDate`, `priority`, `estimatedMinutes`, `notes`
+- validators: required, minLength, min/max
+- show validation messages in the template
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 4.Input, Output properties
 
-```bash
-ng generate --help
-```
+- `TaskListComponent` receives tasks via `@Input() tasks`
+- `TaskItemComponent` receives a `@Input() task`
+- `TaskItemComponent` emits events:
+    - `@Output() toggleDone = new EventEmitter<string>()`
+    - `@Output() delete = new EventEmitter<string>()`
+- Parent handles those and calls a service.
 
-## Building
+## 5. Injectable services
 
-To build the project run:
+Create services for state + persistence:
 
-```bash
-ng build
-```
+- `TasksService` (CRUD tasks, localStorage persistence)
+- `RecipesService` (read-only mock data is fine)
+- Optional: `ToastService` (simple “Saved!” messages)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Keep all data logic out of components.
 
-## Running unit tests
+## 6. Pipes
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Add at least 2 custom pipes + some built-ins:
 
-```bash
-ng test
-```
+- `priorityLabel` pipe (1/2/3 → “Low/Medium/High”)
+- `dueStatus` pipe (“Overdue”, “Due soon”, “Later”)
+- built-ins: `date`, `percent`, `uppercase`, etc.
 
-## Running end-to-end tests
+## 7. Property binding 
 
-For end-to-end (e2e) testing, run:
+- `[disabled]="taskForm.invalid"`
+- `[class.done]="task.done"`
+- `[routerLink]="['/recipes', recipe.id]"`
 
-```bash
-ng e2e
-```
+## 8. Template & Event handling
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- `@for` (or `*ngFor`) for lists
+- `@if` (or `*ngIf`) for empty states / validation messages
+- click handlers:
+    - `(click)="onToggleDone(task.id)"`
+    - `(click)="onAddTask()"`
 
-## Additional Resources
+## 9. Signals
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Use signals in at least one “slice” of state (tasks is ideal):
+
+- In `TasksService`:
+    - `tasks = signal<Task[]>(...)`
+    - `filter = signal<'all'|'open'|'done'>('all')`
+    - `filteredTasks = computed(() => ...)`
+- Components read state directly from the service.
+
+## 10. Deferrable views
+
+Use `@defer` to lazy-render heavier UI:
+
+- On `/recipes`, defer rendering the recipe list:
+    - `@defer { <app-recipe-list .../> } @placeholder { loading skeleton }`
+- Or defer `RecipeDetailComponent` content (image + notes) while showing a placeholder.
+
+## 11. Image optimization
+
+In recipes:
+
+- store `imageUrl` for each recipe
+- use `NgOptimizedImage`:
+    - provide `width`/`height`
+    - use `priority` for above-the-fold image on details page
+    - optionally `fill` for card thumbnails
+
+## Data models
+
+- `Task`: `id`, `title`, `topic`, `dueDate`, `priority`, `estimatedMinutes`, `done`
+- `Recipe`: `id`, `name`, `minutes`, `tags`, `imageUrl`, `ingredients[]`, `steps[]`
+
+## Objectives
+
+1. Can add/edit/delete tasks via a reactive form (with validation).
+2. Task items communicate to parent via `@Input/@Output`.
+3. Tasks are stored in localStorage via an injectable service.
+4. Dashboard shows computed stats (total, done %, overdue count).
+5. Recipes page uses `@defer` and images use `NgOptimizedImage`.
+6. At least 2 custom pipes are used in templates.
+7. App has working routing including a `NotFound` route.
