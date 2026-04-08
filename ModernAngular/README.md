@@ -5,7 +5,8 @@ Here are the ideas and goals
 
 ## Version
 
-0.01: Complete nav bar
+0.02: Added task component and form, working but need polishing.
+0.01: Complete nav bar.
 
 ## 1.Component
 
@@ -13,11 +14,9 @@ Here are the ideas and goals
 - `NavbarComponent`
 - `DashboardComponent`
 - `TasksPageComponent`
-- `TaskListComponent`
 - `TaskItemComponent`
 - `TaskFormComponent`
 - `RecipesPageComponent`
-- `RecipeListComponent`
 - `RecipeCardComponent`
 - `RecipeDetailComponent`
 - `NotFoundComponent`

@@ -1,1 +1,56 @@
-<p>task-item-component works!</p>
+<!--<div class="text-muted ml-10 mt-10 min-h-1/10 w-[90%] bg border-3 p-3 rounded-4xl app-task-item-component">
+    <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">1. Study Angular </p>
+    <p class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1">Topic: Coding. Due date: 20th of April, 2026. Priority: High. Estimated minutes: 90. Completed: False  </p>
+</div> -->
+<ul >
+  @for (t of tasks; track t.id) {
+    <li class="text-muted ml-10 mt-2 min-h-1/10 w-[90%] bg border-3 p-3 rounded-4xl app-task-item-component flex flex-row">
+      <div class="flex flex-col shrink-0">
+        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
+          {{ t.title }}
+        </p>
+        <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
+            <p>{{ t.topic }}.</p>
+            <p>Due: {{ t.dueDate | date:'EEEE, MMMM d, y' }}.</p>
+            <p>Priority: {{ t.priority }}.</p>
+            <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
+        </div>
+      </div>
+      <div class="flex-1 min-w-0 flex justify-end ">
+        <div class="flex flex-col justify-center">
+            <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
+            <input class="task-checkbox ml-3" type="checkbox" [checked]="t.done" (change)="toggleDone(t)" />
+        </div>
+        <button class="btn ml-4" type="button" (click)="remove(t)">Delete</button>
+      </div>
+    </li>
+  }
+</ul>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  
+      <li class="text-muted ml-10 mt-10 min-h-1/10 w-[90%] bg border-3 p-3 rounded-4xl app-task-item-component flex flex-row">
+      <div class="flex flex-col shrink-0">
+        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
+          <input class="border rounded-l pl-1"formControlName="title" placeholder="Title" />
+        </p>
+        <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
+            <input class="border rounded-l pl-1" formControlName="topic" placeholder="Topic" />
+            <input class="border rounded-l pl-1" type="date" formControlName="dueDate" />
+            <label>
+              Priority (1-5):
+              <input class="border rounded-l pl-1" type="number" min="1" max="5" formControlName="priority" placeholder="Priority (1-5)" />
+            </label>
+            <label>
+              Estimated Minutes:
+              <input class="border rounded-l pl-1" type="number" min="1" formControlName="estimatedMinutes" placeholder="Estimated Minutes" />
+            </label>
+        </div>
+      </div>
+      <div class="flex-1 min-w-0 flex justify-end ">
+        <button class="btn ml-4" type="submit">Add task</button>
+      </div>
+      <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
+
+    </li>
+
+</form>

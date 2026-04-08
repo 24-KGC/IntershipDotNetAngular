@@ -1,7 +1,11 @@
 <div class="min-h-screen w-[full] bg-dark">
-    <div class ="text-[clamp(1.5rem,2vw,2.5rem)] text pt-5 ml-10 w-[30%] ">
-        <p> {{ time$ | async | date: 'fullDate' }} </p>
-        <p> {{ time$ | async | date: 'mediumTime' }} </p>
+    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-row gap-2">
+        <p> {{ time$ | async | date: 'HH:mm:ss:SSS' }}, </p>
+        <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
+    </div>
+    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-col">
+        <p> Week of the year: {{ time$ | async | date: 'w' }} </p>
+        <p> Week of the month: {{ time$ | async | date: 'W' }} </p>
     </div>
 
 </div>
