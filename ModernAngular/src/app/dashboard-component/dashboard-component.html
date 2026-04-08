@@ -1,1 +1,7 @@
-<p>dashboard-component works!</p>
+<div class="min-h-screen w-[full] bg-dark">
+    <div class ="text-[clamp(1.5rem,2vw,2.5rem)] text pt-5 ml-10 w-[30%] ">
+        <p> {{ time$ | async | date: 'fullDate' }} </p>
+        <p> {{ time$ | async | date: 'mediumTime' }} </p>
+    </div>
+
+</div>

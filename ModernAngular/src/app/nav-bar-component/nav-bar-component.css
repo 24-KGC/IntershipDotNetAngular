@@ -1,0 +1,9 @@
+.nav-bar {
+    border-color: var(--border-muted);
+}
+.nav-bar-button {
+    border-color: var(--border);
+}
+.nav-bar-button:hover {
+    border-color: var(--highlight);
+}

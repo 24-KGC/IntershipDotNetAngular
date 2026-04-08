@@ -3,6 +3,10 @@
 This project is created for the purpose of practice implementing Angular's basic features.
 Here are the ideas and goals
 
+## Version
+
+0.01: Complete nav bar
+
 ## 1.Component
 
 - `AppComponent` (shell)
