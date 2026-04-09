@@ -1,11 +1,27 @@
 <div class="min-h-screen w-[full] bg-dark">
-    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-row gap-2">
-        <p> {{ time$ | async | date: 'HH:mm:ss:SSS' }}, </p>
+    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-row gap-1">
+        <p> {{ time$ | async | date: 'HH:mm:ss' }}, </p>
         <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
     </div>
-    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-col">
+    <div class ="text-[clamp(1rem,2vw,1.5rem)] text ml-10 w-[30%] flex flex-col">
         <p> Week of the year: {{ time$ | async | date: 'w' }} </p>
         <p> Week of the month: {{ time$ | async | date: 'W' }} </p>
     </div>
-
+    <div class ="text-[clamp(1rem,1.25vw,1.5rem)] text-muted mt-10 ml-10 w-[30%] flex flex-col">
+        <p> Tasks remaining: {{ remainingTasksCount }} </p>
+        <p> Estimated time till completion: {{ Math.floor(totalEstimatedMinutes / 60) | number:'1.0-0' }} hours, {{ (totalEstimatedMinutes % 60) | number:'1.0-0' }} minutes. </p>
+        <div class="flex flex-row gap-1">
+            <p> Topics:</p>
+            @for (t of tasks; track t.id) {
+                @if (t === tasks[tasks.length - 1]) {
+                    <p>{{ t.topic }}.</p>
+                }
+                @else {
+                    <p>{{ t.topic }},</p>
+                }
+            }
+        </div>
+        <p> Done: {{ (tasks.filter(t => t.done).length / tasks.length * 100) | number:'1.0-0' }}%.</p>
+        <p>Overdue: {{ overdueCount$ | async }}.</p>
+    </div>
 </div>

@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, input } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 @Component({
   selector: 'app-task-item-component',
+  standalone: true,
   imports: [ReactiveFormsModule, DatePipe],
   templateUrl: './task-item-component.html',
   styleUrl: './task-item-component.css',
@@ -68,4 +69,5 @@ export class TaskItemComponent implements OnInit {
   }
 
   trackById = (_: number, t: TaskNote) => t.id;
+  @Input() collapsed = false;
 }

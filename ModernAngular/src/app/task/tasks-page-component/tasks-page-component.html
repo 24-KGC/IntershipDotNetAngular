@@ -1,11 +1,17 @@
 <div class="min-h-screen w-[full] bg-dark">
-    <div class ="text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted pt-5 ml-10 w-[30%] flex flex-row gap-1">
-        <p> {{ time$ | async | date: 'HH:mm:ss' }}, </p>
-        <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
+    <div class="flex flex-row min-w-[30%]">
+        <div class ="text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted pt-5 ml-10 w-[30%] flex flex-row gap-1">
+            <p> {{ time$ | async | date: 'HH:mm:ss' }}, </p>
+            <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
+        </div>
+        <button class="btn ml-4 mt-5" type="button" (click)="toggleCollapsed()">
+        {{ collapsed ? 'List' : 'Collapse' }}
+        </button>
+
     </div>
     <div class ="text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted ml-10 w-[30%] flex flex-col">
-        <p> 20 tasks remaining. </p>
-        <p> Estimated time till completion: 20 hours. </p>
+        <p> {{remainingTasksCount}} tasks remaining. </p>
+        <p> Estimated time till completion: {{ Math.floor(totalEstimatedMinutes / 60) | number:'1.0-0' }} hours, {{ (totalEstimatedMinutes % 60) | number:'1.0-0' }} minutes. </p>
     </div>
-    <app-task-item-component></app-task-item-component>
+    <app-task-item-component [collapsed]="collapsed"></app-task-item-component>
 </div>

@@ -40,7 +40,10 @@
 .highlight {
     color: var(--highlight);
 }
+.secondary {
+    color: var(--secondary);
 
+}
 
 
 

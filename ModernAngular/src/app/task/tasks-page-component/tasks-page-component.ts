@@ -1,14 +1,36 @@
-import { Component, inject } from '@angular/core';
-import { DatePipe, AsyncPipe } from '@angular/common';
+import { Component, EventEmitter, inject, input, OnInit, Output } from '@angular/core';
+import { TaskNote, TaskStoreService } from '../../services/task-store.service';
+import { DatePipe, AsyncPipe, DecimalPipe } from '@angular/common';
 import { ClockService } from '../../services/clock.service';
 import { TaskItemComponent } from '../task-item-component/task-item-component';
 @Component({
   selector: 'app-tasks-page-component',
-  imports: [DatePipe, AsyncPipe, TaskItemComponent],
+  standalone: true,
+  imports: [DatePipe, AsyncPipe, DecimalPipe, TaskItemComponent],
   templateUrl: './tasks-page-component.html',
   styleUrl: './tasks-page-component.css',
 })
-export class TasksPageComponent {
-  clock = inject(ClockService);          // then use clock.time$
-  time$ = this.clock.time$;              // convenience
+export class TasksPageComponent implements OnInit {
+  Math = Math; // for template
+  clock = inject(ClockService);          
+  time$ = this.clock.time$;              
+  private store = inject(TaskStoreService);
+
+  tasks: TaskNote[] = [];
+
+  ngOnInit(): void {
+    this.tasks = this.store.getTasks();
+  }
+
+  get totalEstimatedMinutes(): number {
+    return this.tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
+  }
+  get remainingTasksCount(): number {
+    return this.tasks.filter(t => !t.done).length;
+  }
+  collapsed = true;
+
+  toggleCollapsed(): void {
+    this.collapsed = !this.collapsed;
+  }
 }
