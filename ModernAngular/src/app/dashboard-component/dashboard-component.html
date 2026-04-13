@@ -10,14 +10,14 @@
     <div class ="text-[clamp(1rem,1.25vw,1.5rem)] text-muted mt-10 ml-10 w-[30%] flex flex-col">
         <p> Tasks remaining: {{ remainingTasksCount }} </p>
         <p> Estimated time till completion: {{ Math.floor(totalEstimatedMinutes / 60) | number:'1.0-0' }} hours, {{ (totalEstimatedMinutes % 60) | number:'1.0-0' }} minutes. </p>
-        <div class="flex flex-row gap-1">
+        <div class="gap-2">
             <p> Topics:</p>
             @for (t of tasks(); track t.id) {
                 @if (t === tasks()[tasks().length - 1]) {
-                    <p>{{ t.topic }}.</p>
+                    <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ t.topic }}.</p>
                 }
                 @else {
-                    <p>{{ t.topic }},</p>
+                    <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ t.topic }},</p>
                 }
             }
         </div>

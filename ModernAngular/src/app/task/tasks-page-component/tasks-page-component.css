@@ -6,3 +6,6 @@
   cursor: pointer;
   background-color: var(--secondary);
 }
+.btn:active {
+  background-color: var(--primary);
+}

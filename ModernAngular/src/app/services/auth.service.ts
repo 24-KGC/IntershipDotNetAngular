@@ -59,6 +59,7 @@ export class AuthService {
     this.session.set(session);
     if (isPlatformBrowser(this.platformId)) {
       window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      console.log('[AuthService] Session saved to localStorage for user:', response.email);
     }
   }
 
@@ -69,17 +70,21 @@ export class AuthService {
 
     const raw = window.localStorage.getItem(SESSION_KEY);
     if (!raw) {
+      console.log('[AuthService] No session found in localStorage');
       return null;
     }
 
     try {
       const parsed = JSON.parse(raw) as StoredSession;
       if (!parsed?.token || !parsed?.email || !parsed?.userId) {
+        console.log('[AuthService] Invalid session data in localStorage');
         return null;
       }
 
+      console.log('[AuthService] Session restored from localStorage for user:', parsed.email);
       return parsed;
-    } catch {
+    } catch (error) {
+      console.error('[AuthService] Failed to parse session from localStorage:', error);
       return null;
     }
   }

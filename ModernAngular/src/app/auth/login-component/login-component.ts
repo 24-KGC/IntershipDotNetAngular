@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-login-component',
@@ -14,6 +15,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -46,12 +48,27 @@ export class LoginComponent {
     request$.subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigateByUrl('/tasks');
+        this.redirectAfterLogin();
       },
       error: () => {
         this.loading.set(false);
         this.error.set('Authentication failed. Check your credentials and try again.');
       }
     });
+  }
+
+  private redirectAfterLogin(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.router.navigateByUrl('/tasks');
+      return;
+    }
+
+    const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+      sessionStorage.removeItem('redirectAfterLogin');
+      this.router.navigateByUrl(redirectUrl);
+    } else {
+      this.router.navigateByUrl('/tasks');
+    }
   }
 }

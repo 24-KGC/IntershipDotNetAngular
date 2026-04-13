@@ -42,9 +42,10 @@
 }
 .secondary {
     color: var(--secondary);
-
 }
-
+.primary {
+    color: var(--primary);
+}
 
 
 body.light {

@@ -3,12 +3,13 @@ import { DashboardComponent } from './dashboard-component/dashboard-component';
 import { RecipesPageComponent } from './recipe/recipes-page-component/recipes-page-component';
 import { TasksPageComponent } from './task/tasks-page-component/tasks-page-component';
 import { LoginComponent } from './auth/login-component/login-component';
-import { authGuard } from './auth/auth.guard';
+import { authGuard, loginGuard } from './auth/auth.guard';
 export const routes: Routes = [
     {
         path: 'login',
         title: 'Login',
-        component: LoginComponent
+        component: LoginComponent,
+        canActivate: [loginGuard]
     },
     {
         path: '',

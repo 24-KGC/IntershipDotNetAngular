@@ -36,6 +36,7 @@
               <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
               <input class="task-checkbox ml-3" type="checkbox" [checked]="t.done" (change)="toggleDone(t)" />
           </div>
+          <button class="btn ml-4" type="button" (click)="editTask(t)">Edit</button>
           <button class="btn ml-4" type="button" (click)="remove(t)">Delete</button>
         </div>
         }
@@ -47,6 +48,11 @@
         <li class="text-muted ml-10 mt-10 min-h-1/10 w-[90%] bg border-3 p-3 rounded-4xl app-task-item-component flex flex-row">
         <div class="flex flex-col shrink-0">
           <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
+            @if (editingId()) {
+              Edit: 
+            } @else {
+              New: 
+            }
             <input class="border rounded-l pl-1"formControlName="title" placeholder="Title" />
           </p>
           <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-3 mt-2">
@@ -63,7 +69,12 @@
           </div>
         </div>
         <div class="flex-1 min-w-0 flex justify-end ">
-          <button class="btn ml-4" type="submit" [disabled]="loading()">Add task</button>
+          @if (editingId()) {
+            <button class="btn ml-4" type="button" (click)="cancelEdit()">Cancel</button>
+            <button class="btn ml-4" type="submit" [disabled]="loading()">Update task</button>
+          } @else {
+            <button class="btn ml-4" type="submit" [disabled]="loading()">Add task</button>
+          }
         </div>
         <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
 

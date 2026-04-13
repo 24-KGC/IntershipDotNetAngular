@@ -1,4 +1,4 @@
-import { Component, inject, Input, input } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -18,6 +18,8 @@ export class TaskItemComponent implements OnInit {
   readonly loading = this.store.loading;
   readonly error = this.store.error;
 
+  readonly editingId = signal<string | null>(null);
+
   form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
     topic: [''],
@@ -35,6 +37,31 @@ export class TaskItemComponent implements OnInit {
     });
   }
 
+  editTask(task: TaskNote): void {
+    this.editingId.set(task.id);
+    const dueDate = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '';
+    this.form.patchValue({
+      title: task.title,
+      topic: task.topic,
+      dueDate: dueDate,
+      priority: task.priority,
+      estimatedMinutes: task.estimatedMinutes,
+      done: task.done,
+    });
+  }
+
+  cancelEdit(): void {
+    this.editingId.set(null);
+    this.form.reset({
+      title: '',
+      topic: '',
+      dueDate: '',
+      priority: 1,
+      estimatedMinutes: 1,
+      done: false,
+    });
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -42,30 +69,54 @@ export class TaskItemComponent implements OnInit {
     }
 
     const v = this.form.getRawValue();
+    const editingId = this.editingId();
 
-    const task: TaskNote = {
-      id: crypto.randomUUID(),
-      title: v.title.trim(),
-      topic: v.topic.trim(),
-      dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
-      priority: v.priority,
-      estimatedMinutes: v.estimatedMinutes,
-      done: v.done,
-      createdAt: new Date().toISOString(),
-    };
+    if (editingId) {
+      // Update existing task
+      const task = this.tasks().find(t => t.id === editingId);
+      if (task) {
+        const updatedTask: TaskNote = {
+          ...task,
+          title: v.title.trim(),
+          topic: v.topic.trim(),
+          dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
+          priority: v.priority,
+          estimatedMinutes: v.estimatedMinutes,
+          done: v.done,
+        };
 
-    this.store.addTask(task).subscribe({
-      next: () => {
-        this.form.reset({
-          title: '',
-          topic: '',
-          dueDate: '',
-          priority: 1,
-          estimatedMinutes: 1,
-          done: false,
+        this.store.updateTask(updatedTask).subscribe({
+          next: () => {
+            this.cancelEdit();
+          }
         });
       }
-    });
+    } else {
+      // Create new task
+      const task: TaskNote = {
+        id: crypto.randomUUID(),
+        title: v.title.trim(),
+        topic: v.topic.trim(),
+        dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
+        priority: v.priority,
+        estimatedMinutes: v.estimatedMinutes,
+        done: v.done,
+        createdAt: new Date().toISOString(),
+      };
+
+      this.store.addTask(task).subscribe({
+        next: () => {
+          this.form.reset({
+            title: '',
+            topic: '',
+            dueDate: '',
+            priority: 1,
+            estimatedMinutes: 1,
+            done: false,
+          });
+        }
+      });
+    }
   }
 
   toggleDone(t: TaskNote): void {

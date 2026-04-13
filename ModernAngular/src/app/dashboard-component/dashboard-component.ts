@@ -1,8 +1,8 @@
-import { Component, Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DatePipe, DecimalPipe, AsyncPipe  } from '@angular/common';
 import { ClockService } from '../services/clock.service';
-import { TaskNote, TaskStoreService } from '../services/task-store.service';
-import { combineLatestWith, map } from 'rxjs';
+import { TaskStoreService } from '../services/task-store.service';
+import { map } from 'rxjs';
 @Component({
   selector: 'app-dashboard-component',
   standalone: true,
@@ -28,16 +28,14 @@ export class DashboardComponent {
   }
   
   get totalEstimatedMinutes(): number {
-    return this.tasks().reduce((sum, t) => sum + t.estimatedMinutes, 0);
+    return this.tasks()
+      .filter(t => !t.done)
+      .reduce((sum, t) => sum + t.estimatedMinutes, 0);
   }
   get remainingTasksCount(): number {
     return this.tasks().filter(t => !t.done).length;
   }
-  collapsed = true;
-  
-  toggleCollapsed(): void {
-    this.collapsed = !this.collapsed;
-  }
+
   overdueCount$ = this.clock.time$.pipe(
   map(now =>
       this.tasks().filter(t => !t.done && !!t.dueDate && new Date(t.dueDate) < now).length
