@@ -1,0 +1,1 @@
+- v0.04: Added user auth (with FE components), added task api

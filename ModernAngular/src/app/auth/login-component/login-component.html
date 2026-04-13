@@ -1,0 +1,25 @@
+<div class="min-h-screen bg-dark flex justify-center items-center ">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="bg-light login-container border-3 rounded-2xl p-8 w-[min(90vw,480px)]">
+    <h1 class="text text-[clamp(1.2rem,2.2vw,2rem)] mb-4">
+      {{ registerMode() ? 'Create account' : 'Sign in' }}
+    </h1>
+
+    <div class="flex flex-col gap-3 text-muted">
+      <input class="border rounded-l px-3 py-2" formControlName="email" placeholder="Email" type="email" />
+      <input class="border rounded-l px-3 py-2" formControlName="password" placeholder="Password" type="password" />
+    </div>
+
+    @if (error()) {
+      <p class="text-red-700 mt-3 text-muted">{{ error() }}</p>
+    }
+
+    <div class="flex gap-3 mt-5 text-muted">
+      <button class="btn" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Please wait...' : (registerMode() ? 'Register' : 'Login') }}
+      </button>
+      <button class="btn" type="button" (click)="toggleMode()" [disabled]="loading()">
+        {{ registerMode() ? 'Use existing account' : 'Create account' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -16,19 +16,23 @@ export class TasksPageComponent implements OnInit {
   time$ = this.clock.time$;              
   private store = inject(TaskStoreService);
 
-  tasks: TaskNote[] = [];
+  readonly tasks = this.store.tasks;
 
   ngOnInit(): void {
-    this.tasks = this.store.getTasks();
+    this.store.loadTasks().subscribe({
+      error: () => {
+        // Error is tracked in store.
+      }
+    });
   }
 
   get totalEstimatedMinutes(): number {
-    return this.tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
+    return this.tasks().reduce((sum, t) => sum + t.estimatedMinutes, 0);
   }
   get remainingTasksCount(): number {
-    return this.tasks.filter(t => !t.done).length;
+    return this.tasks().filter(t => !t.done).length;
   }
-  collapsed = true;
+  collapsed = false;
 
   toggleCollapsed(): void {
     this.collapsed = !this.collapsed;

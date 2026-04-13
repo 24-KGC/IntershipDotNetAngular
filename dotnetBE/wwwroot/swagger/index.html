@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dotnetBE API Swagger</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar input {
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      min-width: 220px;
+    }
+
+    .topbar button {
+      padding: 8px 12px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #0f172a;
+      color: white;
+      cursor: pointer;
+    }
+
+    .topbar button.secondary {
+      background: white;
+      color: #0f172a;
+    }
+
+    .status {
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .status.error {
+      color: #b91c1c;
+    }
+
+    #swagger-ui {
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <strong>API Login</strong>
+    <input id="email" type="email" placeholder="Email" autocomplete="email" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="loginBtn" type="button">Login</button>
+    <button id="logoutBtn" type="button" class="secondary">Logout</button>
+    <span id="status" class="status">Not logged in</span>
+  </div>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    const tokenKey = 'dotnetbe-jwt';
+    const statusEl = document.getElementById('status');
+    const emailEl = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.className = isError ? 'status error' : 'status';
+    }
+
+    function getToken() {
+      return window.localStorage.getItem(tokenKey);
+    }
+
+    function setToken(token) {
+      window.localStorage.setItem(tokenKey, token);
+    }
+
+    function clearToken() {
+      window.localStorage.removeItem(tokenKey);
+    }
+
+    async function login() {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+
+      if (!email || !password) {
+        setStatus('Enter email and password.', true);
+        return;
+      }
+
+      loginBtn.disabled = true;
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+
+        const data = await response.json();
+        setToken(data.token);
+        setStatus(`Logged in as ${data.email}`);
+        passwordEl.value = '';
+        if (window.ui) {
+          window.ui.preauthorizeApiKey('Bearer', data.token);
+        }
+      } catch (error) {
+        setStatus('Login failed.', true);
+      } finally {
+        loginBtn.disabled = false;
+      }
+    }
+
+    function logout() {
+      clearToken();
+      setStatus('Logged out');
+      if (window.ui) {
+        window.ui.authActions && window.ui.authActions.logout && window.ui.authActions.logout();
+      }
+    }
+
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: '/openapi/v1.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: 'BaseLayout',
+        requestInterceptor: (request) => {
+          const token = getToken();
+          if (token) {
+            request.headers.Authorization = `Bearer ${token}`;
+          }
+          return request;
+        }
+      });
+
+      const token = getToken();
+      if (token) {
+        setStatus('Token loaded from browser storage');
+        window.ui.preauthorizeApiKey('Bearer', token);
+      }
+
+      loginBtn.addEventListener('click', login);
+      logoutBtn.addEventListener('click', logout);
+      passwordEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          login();
+        }
+      });
+    };
+  </script>
+</body>
+</html>

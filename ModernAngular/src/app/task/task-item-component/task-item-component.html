@@ -8,12 +8,18 @@
   </button>
 </div> -->
 <div>
+  @if (error()) {
+    <p class="text-red-700 ml-10 mt-4">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p class="text-muted ml-10 mt-4">Working...</p>
+  }
   <ul >
-    @for (t of tasks; track t.id) {
+    @for (t of tasks(); track t.id) {
       <li class="text-muted ml-10 mt-2 min-h-1/10 w-[90%] bg border-3 p-3 rounded-4xl app-task-item-component flex flex-row">
         <div class="flex flex-col shrink-0">
           <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
-            {{ tasks.indexOf(t) + 1 }}. {{ t.title }}
+            {{ tasks().indexOf(t) + 1 }}. {{ t.title }}
           </p>
         @if (!collapsed) {
           <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
@@ -57,7 +63,7 @@
           </div>
         </div>
         <div class="flex-1 min-w-0 flex justify-end ">
-          <button class="btn ml-4" type="submit">Add task</button>
+          <button class="btn ml-4" type="submit" [disabled]="loading()">Add task</button>
         </div>
         <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
 

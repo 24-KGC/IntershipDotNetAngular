@@ -14,7 +14,9 @@ export class TaskItemComponent implements OnInit {
   private fb = inject(FormBuilder);
   private store = inject(TaskStoreService);
 
-  tasks: TaskNote[] = [];
+  readonly tasks = this.store.tasks;
+  readonly loading = this.store.loading;
+  readonly error = this.store.error;
 
   form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
@@ -26,7 +28,11 @@ export class TaskItemComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.tasks = this.store.getTasks();
+    this.store.loadTasks().subscribe({
+      error: () => {
+        // Error state is handled in service signal.
+      }
+    });
   }
 
   submit(): void {
@@ -48,24 +54,26 @@ export class TaskItemComponent implements OnInit {
       createdAt: new Date().toISOString(),
     };
 
-    this.tasks = this.store.addTask(task);
-
-    this.form.reset({
-      title: '',
-      topic: '',
-      dueDate: '',
-      priority: 1,
-      estimatedMinutes: 1,
-      done: false,
+    this.store.addTask(task).subscribe({
+      next: () => {
+        this.form.reset({
+          title: '',
+          topic: '',
+          dueDate: '',
+          priority: 1,
+          estimatedMinutes: 1,
+          done: false,
+        });
+      }
     });
   }
 
   toggleDone(t: TaskNote): void {
-    this.tasks = this.store.updateTask({ ...t, done: !t.done });
+    this.store.updateTask({ ...t, done: !t.done }).subscribe();
   }
 
   remove(t: TaskNote): void {
-    this.tasks = this.store.deleteTask(t.id);
+    this.store.deleteTask(t.id).subscribe();
   }
 
   trackById = (_: number, t: TaskNote) => t.id;

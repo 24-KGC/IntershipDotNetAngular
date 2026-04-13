@@ -17,17 +17,21 @@ export class DashboardComponent {
 
   private store = inject(TaskStoreService);
   
-  tasks: TaskNote[] = [];
+  readonly tasks = this.store.tasks;
   
   ngOnInit(): void {
-    this.tasks = this.store.getTasks();
+    this.store.loadTasks().subscribe({
+      error: () => {
+        // Error is tracked in store.
+      }
+    });
   }
   
   get totalEstimatedMinutes(): number {
-    return this.tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
+    return this.tasks().reduce((sum, t) => sum + t.estimatedMinutes, 0);
   }
   get remainingTasksCount(): number {
-    return this.tasks.filter(t => !t.done).length;
+    return this.tasks().filter(t => !t.done).length;
   }
   collapsed = true;
   
@@ -36,7 +40,7 @@ export class DashboardComponent {
   }
   overdueCount$ = this.clock.time$.pipe(
   map(now =>
-    this.tasks.filter(t => !t.done && !!t.dueDate && new Date(t.dueDate) < now).length
+      this.tasks().filter(t => !t.done && !!t.dueDate && new Date(t.dueDate) < now).length
   )
 );
 

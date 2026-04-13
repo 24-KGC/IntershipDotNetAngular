@@ -1,7 +1,7 @@
 <nav class="h-[6%] bg nav-bar border-b-5 flex ">
     <div class="w-[10%] flex items-center min-h-full flex-col justify-center">
         <p class="text-[clamp(1.5rem,1.5vw,2.5rem)] text">StudyBites</p>
-        <p class="text-[clamp(1rem,1vw,2rem)] text-muted">Ver 0.01</p>
+        <p class="text-[clamp(1rem,1vw,2rem)] text-muted">Ver 0.04</p>
     </div>
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer">
         <p class="text-[clamp(1.5rem,2vw,2.5rem)] text">Dashboard</p>
@@ -12,4 +12,14 @@
     <a routerLink="/recipes" routerLinkActive="active" class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer">
         <p class="text-[clamp(1.5rem,2vw,2.5rem)] text">Recipes</p>
     </a>
+        @if (!auth.isAuthenticated()) {
+            <a routerLink="/login" routerLinkActive="active" class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer">
+                    <p class="text-[clamp(1.2rem,1.5vw,2rem)] text">Login</p>
+            </a>
+        }
+        @if (auth.isAuthenticated()) {
+            <button type="button" (click)="logout()" class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer">
+                    <p class="text-[clamp(1.2rem,1.5vw,2rem)] text">Logout</p>
+            </button>
+        }
 </nav>

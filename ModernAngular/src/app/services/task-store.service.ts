@@ -1,5 +1,7 @@
-import { Injectable, PLATFORM_ID, inject } from "@angular/core";
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, inject, signal } from "@angular/core";
+import { HttpClient } from '@angular/common/http';
+import { catchError, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 export interface TaskNote {
   id: string;        
   title: string;
@@ -11,55 +13,89 @@ export interface TaskNote {
   createdAt: string; 
 }
 
-const KEY = 'demo-tasks';
-
 @Injectable({ providedIn: 'root' })
 export class TaskStoreService {
-  private platformId = inject(PLATFORM_ID);
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/tasks`;
 
-  private get isBrowser(): boolean {
-    return isPlatformBrowser(this.platformId);
+  readonly tasks = signal<TaskNote[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+
+  loadTasks() {
+    this.loading.set(true);
+    this.error.set(null);
+
+    return this.http.get<TaskNote[]>(this.baseUrl).pipe(
+      tap((tasks) => {
+        this.tasks.set(tasks);
+        this.loading.set(false);
+      }),
+      catchError((error) => {
+        this.loading.set(false);
+        this.error.set('Failed to load tasks.');
+        return throwError(() => error);
+      })
+    );
   }
 
-  getTasks(): TaskNote[] {
-    if (!this.isBrowser) return [];
+  addTask(task: TaskNote) {
+    this.loading.set(true);
+    this.error.set(null);
 
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return [];
-
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? (parsed as TaskNote[]) : [];
-    } catch {
-      return [];
-    }
+    return this.http.post<TaskNote>(this.baseUrl, task).pipe(
+      tap((created) => {
+        this.tasks.update((tasks) => [created, ...tasks]);
+        this.loading.set(false);
+      }),
+      catchError((error) => {
+        this.loading.set(false);
+        this.error.set('Failed to create task.');
+        return throwError(() => error);
+      })
+    );
   }
 
-  setTasks(tasks: TaskNote[]): void {
-    if (!this.isBrowser) return;
-    window.localStorage.setItem(KEY, JSON.stringify(tasks));
+  updateTask(updatedTask: TaskNote) {
+    this.loading.set(true);
+    this.error.set(null);
+
+    const body = {
+      title: updatedTask.title,
+      topic: updatedTask.topic,
+      dueDate: updatedTask.dueDate,
+      priority: updatedTask.priority,
+      estimatedMinutes: updatedTask.estimatedMinutes,
+      done: updatedTask.done
+    };
+
+    return this.http.put<TaskNote>(`${this.baseUrl}/${updatedTask.id}`, body).pipe(
+      tap((saved) => {
+        this.tasks.update((tasks) => tasks.map((t) => (t.id === saved.id ? saved : t)));
+        this.loading.set(false);
+      }),
+      catchError((error) => {
+        this.loading.set(false);
+        this.error.set('Failed to update task.');
+        return throwError(() => error);
+      })
+    );
   }
 
-  clearTasks(): void {
-    if (!this.isBrowser) return;
-    window.localStorage.removeItem(KEY);
-  }
+  deleteTask(id: string) {
+    this.loading.set(true);
+    this.error.set(null);
 
-  addTask(task: TaskNote): TaskNote[] {
-    const updated = [task, ...this.getTasks()];
-    this.setTasks(updated);
-    return updated;
-  }
-
-  updateTask(updatedTask: TaskNote): TaskNote[] {
-    const updated = this.getTasks().map(t => t.id === updatedTask.id ? updatedTask : t);
-    this.setTasks(updated);
-    return updated;
-  }
-
-  deleteTask(id: string): TaskNote[] {
-    const updated = this.getTasks().filter(t => t.id !== id);
-    this.setTasks(updated);
-    return updated;
+    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
+      tap(() => {
+        this.tasks.update((tasks) => tasks.filter((t) => t.id !== id));
+        this.loading.set(false);
+      }),
+      catchError((error) => {
+        this.loading.set(false);
+        this.error.set('Failed to delete task.');
+        return throwError(() => error);
+      })
+    );
   }
 }

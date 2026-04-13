@@ -12,8 +12,8 @@
         <p> Estimated time till completion: {{ Math.floor(totalEstimatedMinutes / 60) | number:'1.0-0' }} hours, {{ (totalEstimatedMinutes % 60) | number:'1.0-0' }} minutes. </p>
         <div class="flex flex-row gap-1">
             <p> Topics:</p>
-            @for (t of tasks; track t.id) {
-                @if (t === tasks[tasks.length - 1]) {
+            @for (t of tasks(); track t.id) {
+                @if (t === tasks()[tasks().length - 1]) {
                     <p>{{ t.topic }}.</p>
                 }
                 @else {
@@ -21,7 +21,7 @@
                 }
             }
         </div>
-        <p> Done: {{ (tasks.filter(t => t.done).length / tasks.length * 100) | number:'1.0-0' }}%.</p>
+        <p> Done: {{ tasks().length ? ((tasks().filter(t => t.done).length / tasks().length) * 100 | number:'1.0-0') : 0 }}%.</p>
         <p>Overdue: {{ overdueCount$ | async }}.</p>
     </div>
 </div>
