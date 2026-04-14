@@ -4,6 +4,8 @@ This project is created for the purpose of practice implementing Angular's basic
 Here are the ideas and goals
 
 ## Version
+
+- 0.06: Added search bar and divided tasks into section.
 - 0.05: Added sorting function and minor changes.
 - v0.04: Added user auth (with FE components), added task api
 - 0.03: Complete the task function, without sorting.

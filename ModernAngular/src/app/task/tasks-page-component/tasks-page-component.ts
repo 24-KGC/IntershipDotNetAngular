@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { TaskStoreService } from '../../services/task-store.service';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { DatePipe, AsyncPipe, DecimalPipe } from '@angular/common';
 import { ClockService } from '../../services/clock.service';
 import { TaskItemComponent } from '../task-item-component/task-item-component';
@@ -20,6 +20,18 @@ export class TasksPageComponent implements OnInit {
   private store = inject(TaskStoreService);
 
   readonly tasks = this.store.tasks;
+  readonly searchQuery = signal('');
+  readonly filteredTasks = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+
+    if (!query) {
+      return this.tasks();
+    }
+
+    return this.tasks().filter((task: TaskNote) => {
+      return task.title.toLowerCase().includes(query) || task.topic.toLowerCase().includes(query);
+    });
+  });
   private currentSortField: SortField | null = null;
   private ascending = true;
 
@@ -43,6 +55,22 @@ export class TasksPageComponent implements OnInit {
 
   toggleCollapsed(): void {
     this.collapsed = !this.collapsed;
+  }
+
+  setSearchQuery(value: string): void {
+    this.searchQuery.set(value);
+  }
+
+  isSortActive(field: SortField): boolean {
+    return this.currentSortField === field;
+  }
+
+  getSortArrow(field: SortField): string {
+    if (this.currentSortField !== field) {
+      return '';
+    }
+
+    return this.ascending ? '↑' : '↓';
   }
 
   sortBy(field: SortField): void {

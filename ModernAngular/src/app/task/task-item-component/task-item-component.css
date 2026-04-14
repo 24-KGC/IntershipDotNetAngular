@@ -1,6 +1,8 @@
 .app-task-item-component {
+  border: 3px solid var(--border);
     border-color: var(--border);
 }
+
 .btn {
   padding: 3px;      
   font-size: 14px;        

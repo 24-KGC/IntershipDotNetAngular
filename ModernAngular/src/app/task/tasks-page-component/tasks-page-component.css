@@ -9,3 +9,16 @@
 .btn:active {
   background-color: var(--primary);
 }
+
+.btn.sort-active {
+  background-color: var(--primary);
+  border-color: var(--highlight);
+}
+
+.sort-arrow {
+  display: inline-block;
+  width: 1em;
+  margin-left: 6px;
+  font-weight: 700;
+  text-align: center;
+}

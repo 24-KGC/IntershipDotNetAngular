@@ -31,6 +31,12 @@
 .border {
     border-color: var(--border);
 }
+.border-success {
+    border-color: var(--success) !important;
+}
+.border-danger {
+    border-color: var(--danger) !important;
+}
 .text {
     color: var(--text);
 }
@@ -46,7 +52,12 @@
 .primary {
     color: var(--primary);
 }
-
+.success {
+    color: var(--success);
+}
+.danger {
+    color: var(--danger);
+}
 
 body.light {
   /* oklch */

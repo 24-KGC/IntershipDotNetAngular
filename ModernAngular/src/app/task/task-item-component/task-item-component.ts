@@ -1,22 +1,24 @@
 import { Component, inject, Input, signal } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
-import { OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ClockService } from '../../services/clock.service';
 @Component({
   selector: 'app-task-item-component',
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe],
+  imports: [ReactiveFormsModule, DatePipe, AsyncPipe],
   templateUrl: './task-item-component.html',
   styleUrl: './task-item-component.css',
 })
-export class TaskItemComponent implements OnInit {
+export class TaskItemComponent {
   private fb = inject(FormBuilder);
   private store = inject(TaskStoreService);
+  private clock = inject(ClockService);
 
-  readonly tasks = this.store.tasks;
+  @Input() tasks: TaskNote[] = [];
   readonly loading = this.store.loading;
   readonly error = this.store.error;
+  readonly time$ = this.clock.time$;
 
   readonly editingId = signal<string | null>(null);
 
@@ -28,14 +30,6 @@ export class TaskItemComponent implements OnInit {
     estimatedMinutes: [1, [Validators.min(1)]],
     done: [false],
   });
-
-  ngOnInit(): void {
-    this.store.loadTasks().subscribe({
-      error: () => {
-        // Error state is handled in service signal.
-      }
-    });
-  }
 
   editTask(task: TaskNote): void {
     this.editingId.set(task.id);
@@ -73,7 +67,7 @@ export class TaskItemComponent implements OnInit {
 
     if (editingId) {
       // Update existing task
-      const task = this.tasks().find(t => t.id === editingId);
+      const task = this.tasks.find(t => t.id === editingId);
       if (task) {
         const updatedTask: TaskNote = {
           ...task,
@@ -121,6 +115,47 @@ export class TaskItemComponent implements OnInit {
 
   toggleDone(t: TaskNote): void {
     this.store.updateTask({ ...t, done: !t.done }).subscribe();
+  }
+
+  isCompleted(task: TaskNote): boolean {
+    return task.done;
+  }
+
+  isOverdue(task: TaskNote): boolean {
+    return !task.done && !!task.dueDate && new Date(task.dueDate) < new Date();
+  }
+
+  getTimeRemaining(task: TaskNote, now: Date | null | undefined): string {
+    if (!task.dueDate) {
+      return 'No due date';
+    }
+
+    const dueTime = new Date(task.dueDate).getTime();
+    if (Number.isNaN(dueTime)) {
+      return 'No due date';
+    }
+
+    const currentTime = now?.getTime() ?? Date.now();
+    const diffInSeconds = Math.floor(Math.abs(dueTime - currentTime) / 1000);
+    const days = Math.floor(diffInSeconds / 86400);
+    const hours = Math.floor((diffInSeconds % 86400) / 3600);
+    const minutes = Math.floor((diffInSeconds % 3600) / 60);
+    const seconds = diffInSeconds % 60;
+    const countdown = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+    return dueTime >= currentTime ? `${countdown} left` : `overdue by ${countdown}`;
+  }
+
+  get inProgressTasks(): TaskNote[] {
+    return this.tasks.filter((task) => !this.isCompleted(task) && !this.isOverdue(task));
+  }
+
+  get completedTasks(): TaskNote[] {
+    return this.tasks.filter((task) => this.isCompleted(task));
+  }
+
+  get overduedTasks(): TaskNote[] {
+    return this.tasks.filter((task) => this.isOverdue(task));
   }
 
   remove(t: TaskNote): void {
