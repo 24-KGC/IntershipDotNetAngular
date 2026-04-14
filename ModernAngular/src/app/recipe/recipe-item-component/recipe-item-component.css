@@ -16,6 +16,7 @@
 .app-recipe-item-component {
   border: 3px solid var(--border);
     border-color: var(--border);
+    margin-top: 8px;
 }
 
 .btn {

@@ -108,8 +108,8 @@
     </form>
 	<div class="mt-2 px-10">
 		<section>
-			<h3 class="text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">In Progress</h3>
-			<ul class="space-y-2">
+			<h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">In Progress</h3>
+			<ul class="space-y-2 my-4">
 				@for (recipe of inProgressRecipes; track recipe.id; let i = $index) {
 					<app-recipe-item-component [recipe]="recipe" [index]="i" [collapsed]="collapsed()" [error]="error()" [loading]="loading()" (edit)="editRecipe($event)" (remove)="removeRecipe($event)"></app-recipe-item-component>
 				}
@@ -117,8 +117,8 @@
 		</section>
 
 		<section class="mt-6">
-			<h3 class="text-success text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">Completed</h3>
-			<ul class="space-y-2">
+			<h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">Completed</h3>
+			<ul class="space-y-2 mt-2">
 				@for (recipe of completedRecipes; track recipe.id; let i = $index) {
 					<app-recipe-item-component [recipe]="recipe" [index]="i" [collapsed]="collapsed()" [error]="error()" [loading]="loading()" (edit)="editRecipe($event)" (remove)="removeRecipe($event)"></app-recipe-item-component>
 				}
