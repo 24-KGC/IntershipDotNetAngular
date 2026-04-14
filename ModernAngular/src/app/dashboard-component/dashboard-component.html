@@ -23,5 +23,22 @@
         </div>
         <p> Done: {{ tasks().length ? ((tasks().filter(t => t.done).length / tasks().length) * 100 | number:'1.0-0') : 0 }}%.</p>
         <p>Overdue: {{ overdueCount$ | async }}.</p>
+
+        <p class="mt-4 text-[clamp(1rem,1.25vw,1.5rem)]">Remaining recipes: {{ remainingRecipesCount }}.</p>
+        <p class="text-[clamp(1rem,1.25vw,1.5rem)]">Estimated cooking time: {{ Math.floor(totalRemainingCookMinutes / 60) | number:'1.0-0' }} hours, {{ (totalRemainingCookMinutes % 60) | number:'1.0-0' }} minutes.</p>
+        <div class="gap-2">
+            <p>Recipe tags:</p>
+            @if (recipeTags.length === 0) {
+                <p class="text-[clamp(0.75rem,1vw,1.25rem)]">No tags yet.</p>
+            } @else {
+                @for (tag of recipeTags; track tag) {
+                    @if (tag === recipeTags[recipeTags.length - 1]) {
+                        <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ tag }}.</p>
+                    } @else {
+                        <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ tag }},</p>
+                    }
+                }
+            }
+        </div>
     </div>
 </div>

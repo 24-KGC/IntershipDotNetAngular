@@ -1,10 +1,25 @@
-.app-task-item-component {
+.app-recipe-item-component {
+  border: 3px solid var(--border);
+}
+
+.recipe-thumb {
+  width: 96px;
+  height: 96px;
+}
+
+.recipe-image-placeholder {
+  width: 96px;
+  height: 96px;
+  background: color-mix(in oklch, var(--bg-light) 75%, var(--border) 25%);
+}
+
+.app-recipe-item-component {
   border: 3px solid var(--border);
     border-color: var(--border);
 }
 
 .btn {
-  padding: 6px;      
+  padding: 8px;      
   font-size: 14px;        
   border-radius: 8px;     
   border: 3px solid transparent;
@@ -13,7 +28,7 @@
   background-color: var(--bg);
 }
 
-.task-checkbox {
+.recipe-checkbox {
   transform: scale(2);      
   accent-color: var(--bg);      
   margin-right: 8px;

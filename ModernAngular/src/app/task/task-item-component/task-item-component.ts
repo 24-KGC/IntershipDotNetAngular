@@ -1,4 +1,4 @@
-import { Component, inject, Input, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, Input, signal } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -21,6 +21,7 @@ export class TaskItemComponent {
   readonly time$ = this.clock.time$;
 
   readonly editingId = signal<string | null>(null);
+  @ViewChild('taskEditFormAnchor') private taskEditFormAnchor?: ElementRef<HTMLElement>;
 
   form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
@@ -42,6 +43,7 @@ export class TaskItemComponent {
       estimatedMinutes: task.estimatedMinutes,
       done: task.done,
     });
+    this.scrollEditFormIntoView();
   }
 
   cancelEdit(): void {
@@ -164,4 +166,11 @@ export class TaskItemComponent {
 
   trackById = (_: number, t: TaskNote) => t.id;
   @Input() collapsed = false;
+
+  private scrollEditFormIntoView(): void {
+    this.taskEditFormAnchor?.nativeElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
 }

@@ -1,125 +1,148 @@
 # StudyBites
 
-This project is created for the purpose of practice implementing Angular's basic features.
-Here are the ideas and goals
+StudyBites is a full-stack practice project with an Angular frontend and an ASP.NET Core backend.
+The app supports user authentication and user-scoped CRUD for tasks and recipes.
+
+## Current Stack
+
+- Frontend: Angular 21 (standalone components), Signals, Reactive Forms, Tailwind CSS
+- Backend: ASP.NET Core Minimal API (.NET 10), EF Core, SQL Server, Identity, JWT
+- Auth: Register/Login with bearer tokens, route guards, auth interceptor
 
 ## Version
 
+- 0.10: Added recipe page and completed most of the original features, minor changes.
 - 0.06: Added search bar and divided tasks into section.
 - 0.05: Added sorting function and minor changes.
-- v0.04: Added user auth (with FE components), added task api
+- 0.04: Added user auth (with FE components), added task api
 - 0.03: Complete the task function, without sorting.
 - 0.02: Added task component and form, working but need polishing.
 - 0.01: Complete nav bar.
 
-## 1.Component
+## Current Features
 
-- `AppComponent` (shell)
-- `NavbarComponent`
-- `DashboardComponent`
-- `TasksPageComponent`
-- `TaskItemComponent`
-- `RecipesPageComponent`
-- `RecipeItemComponent`
-- `RecipeCardComponent`
-- `NotFoundComponent`
+### Authentication
 
-## 2.Routing
+- Register and login flow on `/login`
+- JWT session persistence in browser storage
+- Protected routes for dashboard, tasks, and recipes
+- Redirect back to originally requested route after successful login
 
-- `/dashboard`
+### Tasks
+
+- Create, edit, delete, and toggle completion
+- Search by title/topic
+- Sort by created time, topic, due date, priority, estimated minutes
+- Grouped sections: In Progress, Completed, Overdued
+- Edit action scrolls back to the task form automatically
+
+### Recipes
+
+- Create, edit, delete, and toggle completion
+- Search by title, tag, id, and ingredients
+- Sort by id, title, tag, priority, cook time, ingredient count, step count
+- Grouped sections: In Progress and Completed
+- Image upload support (base64 imageUrl)
+- Image preview in form while creating/editing
+- Ingredient preview text in recipe items
+- Edit action scrolls back to the recipe form automatically
+
+### Dashboard
+
+- Live clock, date, week info
+- Task stats: remaining count, estimated time, done percent, overdue count, topic list
+- Recipe stats: remaining count, estimated cooking time, tag list
+
+## Frontend Routes
+
+- `/login`
+- `/` (Dashboard)
 - `/tasks`
 - `/recipes`
-- `/recipes/:id`
-- `**` → `NotFoundComponent`
+- `**` redirects to `/`
 
-## 3.Forms
+## Backend API (Current)
 
-**Reactive Forms** for `TaskFormComponent`:
+### Auth
 
-- fields: `title`, `topic`, `dueDate`, `priority`, `estimatedMinutes`, `notes`
-- validators: required, minLength, min/max
-- show validation messages in the template
+- `POST /api/auth/register`
+- `POST /api/auth/login`
 
-## 4.Input, Output properties
+### Tasks (authorized)
 
-- `TaskListComponent` receives tasks via `@Input() tasks`
-- `TaskItemComponent` receives a `@Input() task`
-- `TaskItemComponent` emits events:
-    - `@Output() toggleDone = new EventEmitter<string>()`
-    - `@Output() delete = new EventEmitter<string>()`
-- Parent handles those and calls a service.
+- `GET /api/tasks/`
+- `GET /api/tasks/{id}`
+- `POST /api/tasks/`
+- `PUT /api/tasks/{id}`
+- `DELETE /api/tasks/{id}`
 
-## 5. Injectable services
+### Recipes (authorized)
 
-Create services for state + persistence:
+- `GET /api/recipes/`
+- `GET /api/recipes/{id}`
+- `POST /api/recipes/`
+- `PUT /api/recipes/{id}`
+- `DELETE /api/recipes/{id}`
 
-- `TasksService` (CRUD tasks, localStorage persistence)
-- `RecipesService` (read-only mock data is fine)
-- Optional: `ToastService` (simple “Saved!” messages)
+## Data Models (Current)
 
-Keep all data logic out of components.
+### TaskNote
 
-## 6. Pipes
+- `id`
+- `title`
+- `topic`
+- `dueDate`
+- `priority`
+- `estimatedMinutes`
+- `done`
+- `createdAt`
 
-Add at least 2 custom pipes + some built-ins:
+### RecipeRecord
 
-- `priorityLabel` pipe (1/2/3 → “Low/Medium/High”)
-- `dueStatus` pipe (“Overdue”, “Due soon”, “Later”)
-- built-ins: `date`, `percent`, `uppercase`, etc.
+- `id`
+- `title`
+- `ingredients`
+- `numIngredients`
+- `tag`
+- `priority`
+- `cookTime`
+- `numSteps`
+- `completed`
+- `imageUrl`
 
-## 7. Property binding 
+## Run Locally
 
-- `[disabled]="taskForm.invalid"`
-- `[class.done]="task.done"`
-- `[routerLink]="['/recipes', recipe.id]"`
+### Prerequisites
 
-## 8. Template & Event handling
+- Node.js + npm
+- .NET 10 SDK
+- SQL Server (or LocalDB)
 
-- `@for` (or `*ngFor`) for lists
-- `@if` (or `*ngIf`) for empty states / validation messages
-- click handlers:
-    - `(click)="onToggleDone(task.id)"`
-    - `(click)="onAddTask()"`
+### 1) Run backend
 
-## 9. Signals
+From `dotnetBE`:
 
-Use signals in at least one “slice” of state (tasks is ideal):
+```bash
+dotnet restore
+dotnet ef database update
+dotnet run
+```
 
-- In `TasksService`:
-    - `tasks = signal<Task[]>(...)`
-    - `filter = signal<'all'|'open'|'done'>('all')`
-    - `filteredTasks = computed(() => ...)`
-- Components read state directly from the service.
+Backend runs on HTTPS (configured for `https://localhost:7076`).
 
-## 10. Deferrable views
+### 2) Run frontend
 
-Use `@defer` to lazy-render heavier UI:
+From `ModernAngular`:
 
-- On `/recipes`, defer rendering the recipe list:
-    - `@defer { <app-recipe-list .../> } @placeholder { loading skeleton }`
-- Or defer `RecipeDetailComponent` content (image + notes) while showing a placeholder.
+```bash
+npm install
+npm start
+```
 
-## 11. Image optimization
+Frontend runs on `http://localhost:4200` and uses API base URL `https://localhost:7076/api`.
 
-In recipes:
+## Notes
 
-- store `imageUrl` for each recipe
-- use `NgOptimizedImage`:
-    - provide `width`/`height`
-    - use `priority` for above-the-fold image on details page
-    - optionally `fill` for card thumbnails
-
-## Data models
-
-- `Task`: `id`, `title`, `topic`, `dueDate`, `priority`, `estimatedMinutes`, `done`
-- `Recipe`: `id`, `name`, `minutes`, `tags`, `imageUrl`, `ingredients[]`, `steps[]`
-
-## Objectives
-
-1. Can add/edit/delete tasks via a reactive form (with validation).
-2. Task items communicate to parent via `@Input/@Output`.
-3. Tasks are stored in localStorage via an injectable service.
-4. Dashboard shows computed stats (total, done %, overdue count).
-5. Recipes page uses `@defer` and images use `NgOptimizedImage`.
-6. At least 2 custom pipes are used in templates.
-7. App has working routing including a `NotFound` route.
+- CORS policy currently allows `http://localhost:4200`.
+- Task and recipe data are scoped per authenticated user.
+- Some original learning goals in the first README draft were planning targets; this file now reflects the implemented state.
