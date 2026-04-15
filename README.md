@@ -6,26 +6,26 @@ The app supports user authentication and user-scoped CRUD for tasks and recipes.
 
 ```mermaid
 flowchart LR
-  U[User Browser] -->|http://localhost:4200| SPA[Angular 21 Frontend (ModernAngular)]
+  U[User Browser] -->|http 4200| SPA[Angular 21 Frontend ModernAngular]
 
   subgraph FE[Frontend]
-    SPA --> GUARDS[Route guards: protect /, /tasks, /recipes]
-    SPA --> INTERCEPTOR[Auth interceptor: adds Bearer JWT]
-    SPA --> ROUTES[Routes: /login, /, /tasks, /recipes]
+    SPA --> GUARDS[Route guards]
+    SPA --> INTERCEPTOR[Auth interceptor adds Bearer JWT]
+    SPA --> ROUTES[App routes login dashboard tasks recipes]
   end
 
-  SPA -->|https://localhost:7076/api| API[ASP.NET Core Minimal API (.NET 10) (dotnetBE)]
+  SPA -->|https 7076 api| API[Dotnet 10 Minimal API dotnetBE]
 
   subgraph BE[Backend]
-    API --> AUTHMW[Auth middleware: JWT Bearer + Authorization]
-    API --> EP[Endpoints: /api/auth, /api/tasks, /api/recipes]
+    API --> AUTHMW[JWT auth and authorization]
+    API --> EP[Auth Tasks Recipes endpoints]
     API --> EF[EF Core AppDbContext]
-    API --> ID[ASP.NET Core Identity]
-    EF --> DB[(SQL Server / LocalDB)]
+    API --> ID[ASP.NET Identity]
+    EF --> DB[(SQL Server LocalDB)]
     ID --> DB
   end
 
-  API --> SWAGGER[Swagger/OpenAPI (dev)]
+  API --> SWAGGER[Swagger dev only]
 ```
 
 ## Current Stack
