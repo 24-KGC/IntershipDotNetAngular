@@ -1,0 +1,113 @@
+.dashboard-shell {
+	background-color: var(--bg-dark);
+}
+
+.stat-chip {
+	border: 1px solid var(--border-muted);
+	background: var(--bg-light);
+	color: var(--text-muted);
+	border-radius: 999px;
+	padding: 0.35rem 0.75rem;
+}
+
+.metric-card,
+.panel-card {
+	border: 1px solid var(--border-muted);
+	background: var(--bg);
+	border-radius: 1rem;
+	padding: 1rem;
+}
+
+.metric-label {
+	color: var(--text-muted);
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+}
+
+.metric-value {
+	margin-top: 0.45rem;
+	color: var(--text);
+	font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.metric-sub {
+	margin-top: 0.35rem;
+	color: var(--text-muted);
+	font-size: 0.84rem;
+}
+
+.panel-title {
+	color: var(--text);
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+
+.panel-subtitle {
+	color: var(--text);
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.panel-accent {
+	color: var(--success);
+	font-weight: 700;
+}
+
+.progress-track,
+.mini-track {
+	width: 100%;
+	border-radius: 999px;
+	background: var(--border-muted);
+	overflow: hidden;
+}
+
+.progress-track {
+	height: 0.8rem;
+}
+
+.mini-track {
+	height: 0.5rem;
+}
+
+.progress-fill,
+.mini-fill {
+	height: 100%;
+	transition: width 350ms ease;
+}
+
+.progress-task,
+.mini-fill-task {
+	background: var(--info);
+}
+
+.progress-recipe,
+.mini-fill-recipe {
+	background: var(--success);
+}
+
+.pill {
+	border-radius: 999px;
+	padding: 0.3rem 0.7rem;
+	font-size: 0.82rem;
+	border: 1px solid transparent;
+}
+
+.topic-pill {
+	background: var(--bg-light);
+	border-color: var(--info);
+	color: var(--info);
+}
+
+.tag-pill {
+	background: var(--bg-light);
+	border-color: var(--success);
+	color: var(--success);
+}
+
+.empty-state {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}

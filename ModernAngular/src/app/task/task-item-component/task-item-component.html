@@ -16,7 +16,7 @@
   }
   <form #taskEditFormAnchor [formGroup]="form" (ngSubmit)="submit()">
     
-        <li class="text-muted ml-10 mt-10 min-h-1/10 w-[90%] bg p-3 rounded-4xl app-task-item-component flex flex-row">
+        <li class="text-muted ml-20 mt-10 min-h-1/10 w-[90%] bg p-4 rounded-4xl app-task-item-component flex flex-row">
         <div class="flex flex-col shrink-0">
           <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
             @if (editingId()) {
@@ -26,7 +26,7 @@
             }
             <input class="border rounded-l pl-1"formControlName="title" placeholder="Title" />
           </p>
-          <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-3 mt-2">
+            <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-3 mt-2">
               <input class="border rounded-l pl-1" formControlName="topic" placeholder="Topic" />
               <input class="border rounded-l pl-1" type="date" formControlName="dueDate" />
               <label>
@@ -39,7 +39,7 @@
               </label>
           </div>
         </div>
-        <div class="flex-1 min-w-0 flex justify-end ">
+        <div class="flex-1 min-w-0 flex items-center justify-end gap-2">
           @if (editingId()) {
             <button class="btn ml-4" type="button" (click)="cancelEdit()">Cancel</button>
             <button class="btn ml-4" type="submit" [disabled]="loading()">Update task</button>
@@ -52,18 +52,18 @@
       </li>
 
   </form>
-  <div class="ml-10 mt-4 w-[90%] space-y-4">
+  <div class="ml-20 mt-4 w-[90%] space-y-4">
     <section>
       <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">In Progress</h3>
       <ul class="space-y-2">
         @for (t of inProgressTasks; track t.id; let i = $index) {
-          <li class="text-muted min-h-1/10 w-full bg p-3 rounded-4xl app-task-item-component flex flex-row">
+          <li class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row">
             <div class="flex flex-col shrink-0">
               <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
                 {{ i + 1 }}. {{ t.title }}
               </p>
               @if (!collapsed) {
-                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
+                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2">
                   <p>{{ t.topic }}.</p>
                   <p>Priority: {{ t.priority }}.</p>
                   <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
@@ -72,7 +72,7 @@
               }
             </div>
             @if (!collapsed) {
-              <div class="flex-1 min-w-0 flex justify-end ">
+              <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
                 <div class="flex flex-col justify-center">
                   <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
                   <input class="task-checkbox ml-3" type="checkbox" [checked]="t.done" (change)="toggleDone(t)" />
@@ -90,13 +90,13 @@
       <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">Completed</h3>
       <ul class="space-y-2">
         @for (t of completedTasks; track t.id; let i = $index) {
-          <li class="text-muted min-h-1/10 w-full bg p-3 rounded-4xl app-task-item-component flex flex-row border-success">
+          <li class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row border-success">
             <div class="flex flex-col shrink-0">
               <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
                 {{ i + 1 }}. {{ t.title }}
               </p>
               @if (!collapsed) {
-                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
+                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2">
                   <p>{{ t.topic }}.</p>
                   <p>Due: {{ t.dueDate | date:'EEEE, MMMM d, y' }}.</p>
                   <p>Priority: {{ t.priority }}.</p>
@@ -106,7 +106,7 @@
               }
             </div>
             @if (!collapsed) {
-              <div class="flex-1 min-w-0 flex justify-end ">
+              <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
                 <div class="flex flex-col justify-center">
                   <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
                   <input class="task-checkbox ml-3" type="checkbox" [checked]="t.done" (change)="toggleDone(t)" />
@@ -124,13 +124,13 @@
       <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">Overdued</h3>
       <ul class="space-y-2">
         @for (t of overduedTasks; track t.id; let i = $index) {
-          <li class="text-muted min-h-1/10 w-full bg p-3 rounded-4xl app-task-item-component flex flex-row border-danger">
+          <li class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row border-danger">
             <div class="flex flex-col shrink-0">
               <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
                 {{ i + 1 }}. {{ t.title }}
               </p>
               @if (!collapsed) {
-                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1">
+                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2">
                   <p>{{ t.topic }}.</p>
                   <p>Due: {{ t.dueDate | date:'EEEE, MMMM d, y' }}.</p>
                   <p>Priority: {{ t.priority }}.</p>
@@ -140,7 +140,7 @@
               }
             </div>
             @if (!collapsed) {
-              <div class="flex-1 min-w-0 flex justify-end ">
+              <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
                 <div class="flex flex-col justify-center">
                   <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
                   <input class="task-checkbox ml-3" type="checkbox" [checked]="t.done" (change)="toggleDone(t)" />

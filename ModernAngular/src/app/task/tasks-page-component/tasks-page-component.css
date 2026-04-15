@@ -1,13 +1,22 @@
 .btn {
-  padding: 8px;      
-  font-size: 14px;        
-  border-radius: 8px;     
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 10px;
   border: 3px solid transparent;
   border-color: var(--highlight);
   cursor: pointer;
   background-color: var(--secondary);
+
+  transition: transform 120ms ease, background-color 180ms ease, border-color 180ms ease;
 }
+
+.btn:hover {
+  transform: translateY(-1px);
+  background-color: var(--primary);
+}
+
 .btn:active {
+  transform: translateY(0);
   background-color: var(--primary);
 }
 
@@ -22,4 +31,38 @@
   margin-left: 6px;
   font-weight: 700;
   text-align: center;
+}
+
+.task-page-shell {
+  background-color: var(--bg-dark);
+}
+
+.task-top-panel {
+  border: 2px solid var(--border-muted);
+  border-radius: 18px;
+  padding: 1rem;
+  background-color: color-mix(in oklch, var(--bg) 90%, transparent);
+}
+
+.task-toolbar {
+  border: 2px solid var(--border-muted);
+  border-radius: 16px;
+  padding: 0.85rem;
+  background-color: color-mix(in oklch, var(--bg) 92%, transparent);
+}
+
+.task-search {
+  border-width: 2px;
+  border-color: var(--border-muted);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  color: var(--text-muted);
+  background-color: color-mix(in oklch, var(--bg) 90%, transparent);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.task-search:focus {
+  outline: none;
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--highlight) 35%, transparent);
 }

@@ -41,7 +41,7 @@
 
 	</div>
     @if (!collapsed) {
-        <div class="flex-1 min-w-0 flex justify-end ">
+		<div class="flex-1 min-w-0 flex items-center justify-end gap-3">
         <div class="flex flex-col justify-center">
             <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
 			<input class="recipe-checkbox ml-3" type="checkbox" [checked]="recipe.completed" (change)="toggleCompleted(recipe)" />

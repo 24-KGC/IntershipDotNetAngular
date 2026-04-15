@@ -1,20 +1,59 @@
 .app-task-item-component {
   border: 3px solid var(--border);
-    border-color: var(--border);
+  border-color: var(--border);
+  background-color: color-mix(in oklch, var(--bg) 96%, transparent);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--bg-dark) 75%, transparent);
+  transition: border-color 180ms ease, transform 140ms ease;
+}
+
+.app-task-item-component:hover {
+  border-color: var(--highlight);
 }
 
 .btn {
-  padding: 6px;      
-  font-size: 14px;        
-  border-radius: 8px;     
+  padding: 7px 12px;
+  font-size: 14px;
+  border-radius: 10px;
   border: 3px solid transparent;
   border-color: var(--highlight);
   cursor: pointer;
   background-color: var(--bg);
+  color: var(--text);
+  transition: transform 120ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  background-color: var(--bg-light);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .task-checkbox {
-  transform: scale(2);      
-  accent-color: var(--bg);      
+  transform: scale(1.6);
+  accent-color: var(--success);
   margin-right: 8px;
+}
+
+form input:not([type='checkbox']) {
+  border-width: 2px;
+  border-color: var(--border-muted);
+  border-radius: 10px;
+  background-color: color-mix(in oklch, var(--bg) 92%, transparent);
+  color: var(--text);
+  padding: 0.3rem 0.55rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+form input:not([type='checkbox']):focus {
+  outline: none;
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--highlight) 35%, transparent);
+}
+
+section h3 {
+  letter-spacing: 0.02em;
+  font-weight: 700;
 }

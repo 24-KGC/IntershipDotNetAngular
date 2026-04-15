@@ -1,44 +1,123 @@
-<div class="min-h-screen w-[full] bg-dark">
-    <div class ="text-[clamp(1rem,2vw,1.5rem)] text pt-5 ml-10 w-[30%] flex flex-row gap-1">
-        <p> {{ time$ | async | date: 'HH:mm:ss' }}, </p>
-        <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
-    </div>
-    <div class ="text-[clamp(1rem,2vw,1.5rem)] text ml-10 w-[30%] flex flex-col">
-        <p> Week of the year: {{ time$ | async | date: 'w' }} </p>
-        <p> Week of the month: {{ time$ | async | date: 'W' }} </p>
-    </div>
-    <div class ="text-[clamp(1rem,1.25vw,1.5rem)] text-muted mt-10 ml-10 w-[30%] flex flex-col">
-        <p> Tasks remaining: {{ remainingTasksCount }} </p>
-        <p> Estimated time till completion: {{ Math.floor(totalEstimatedMinutes / 60) | number:'1.0-0' }} hours, {{ (totalEstimatedMinutes % 60) | number:'1.0-0' }} minutes. </p>
-        <div class="gap-2">
-            <p> Topics:</p>
-            @for (t of tasks(); track t.id) {
-                @if (t === tasks()[tasks().length - 1]) {
-                    <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ t.topic }}.</p>
-                }
-                @else {
-                    <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ t.topic }},</p>
-                }
-            }
+<div class="dashboard-shell min-h-screen w-full bg-dark px-6 pb-10 pt-6 md:px-10">
+    <header class="panel-card rounded-3xl p-6">
+        <p class="text-muted text-sm uppercase tracking-[0.18em]">Dashboard</p>
+        <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2 text">
+            <p class="text-[clamp(1.8rem,5vw,3.25rem)] leading-none">{{ time$ | async | date: 'HH:mm:ss' }}</p>
+            <p class="text-[clamp(0.95rem,2vw,1.15rem)] text-muted">{{ time$ | async | date: 'EEEE, MMMM d, y' }}</p>
         </div>
-        <p> Done: {{ tasks().length ? ((tasks().filter(t => t.done).length / tasks().length) * 100 | number:'1.0-0') : 0 }}%.</p>
-        <p>Overdue: {{ overdueCount$ | async }}.</p>
+        <div class="mt-4 flex flex-wrap gap-3 text-sm text-muted">
+            <p class="stat-chip">Week of year: {{ time$ | async | date: 'w' }}</p>
+            <p class="stat-chip">Week of month: {{ time$ | async | date: 'W' }}</p>
+        </div>
+    </header>
 
-        <p class="mt-4 text-[clamp(1rem,1.25vw,1.5rem)]">Remaining recipes: {{ remainingRecipesCount }}.</p>
-        <p class="text-[clamp(1rem,1.25vw,1.5rem)]">Estimated cooking time: {{ Math.floor(totalRemainingCookMinutes / 60) | number:'1.0-0' }} hours, {{ (totalRemainingCookMinutes % 60) | number:'1.0-0' }} minutes.</p>
-        <div class="gap-2">
-            <p>Recipe tags:</p>
-            @if (recipeTags.length === 0) {
-                <p class="text-[clamp(0.75rem,1vw,1.25rem)]">No tags yet.</p>
-            } @else {
-                @for (tag of recipeTags; track tag) {
-                    @if (tag === recipeTags[recipeTags.length - 1]) {
-                        <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ tag }}.</p>
-                    } @else {
-                        <p class="text-[clamp(0.75rem,1vw,1.25rem)]">{{ tag }},</p>
-                    }
+    <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <article class="metric-card">
+            <p class="metric-label">Tasks Remaining</p>
+            <p class="metric-value">{{ remainingTasksCount }}</p>
+            <p class="metric-sub">Overdue: {{ (overdueCount$ | async) ?? 0 }}</p>
+        </article>
+        <article class="metric-card">
+            <p class="metric-label">Task Estimate</p>
+            <p class="metric-value">{{ Math.floor(totalEstimatedMinutes / 60) }}h {{ totalEstimatedMinutes % 60 }}m</p>
+            <p class="metric-sub">For all in-progress tasks</p>
+        </article>
+        <article class="metric-card">
+            <p class="metric-label">Recipes Remaining</p>
+            <p class="metric-value">{{ remainingRecipesCount }}</p>
+            <p class="metric-sub">Completed: {{ completedRecipesCount }}</p>
+        </article>
+        <article class="metric-card">
+            <p class="metric-label">Cook Estimate</p>
+            <p class="metric-value">{{ Math.floor(totalRemainingCookMinutes / 60) }}h {{ totalRemainingCookMinutes % 60 }}m</p>
+            <p class="metric-sub">For all in-progress recipes</p>
+        </article>
+    </section>
+
+    <section class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <article class="panel-card">
+            <div class="mb-3 flex items-center justify-between">
+                <p class="panel-title">Task Progress</p>
+                <p class="panel-accent">{{ taskCompletionPercent }}%</p>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill progress-task" [style.width.%]="taskCompletionPercent"></div>
+            </div>
+            <div class="mt-3 flex justify-between text-sm text-muted">
+                <p>Done: {{ completedTasksCount }}</p>
+                <p>Total: {{ tasks().length }}</p>
+            </div>
+
+            <div class="mt-5">
+                <p class="panel-subtitle">Top Topics</p>
+                @if (topTopics.length === 0) {
+                    <p class="empty-state">No topics yet.</p>
+                } @else {
+                    <div class="mt-2 space-y-2">
+                        @for (topic of topTopics; track topic.name) {
+                            <div>
+                                <div class="mb-1 flex justify-between text-sm text-muted">
+                                    <p>{{ topic.name }}</p>
+                                    <p>{{ topic.count }}</p>
+                                </div>
+                                <div class="mini-track">
+                                    <div class="mini-fill mini-fill-task" [style.width.%]="topic.width"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 }
+            </div>
+        </article>
+
+        <article class="panel-card">
+            <div class="mb-3 flex items-center justify-between">
+                <p class="panel-title">Recipe Progress</p>
+                <p class="panel-accent">{{ recipeCompletionPercent }}%</p>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill progress-recipe" [style.width.%]="recipeCompletionPercent"></div>
+            </div>
+            <div class="mt-3 flex justify-between text-sm text-muted">
+                <p>Done: {{ completedRecipesCount }}</p>
+                <p>Total: {{ recipes().length }}</p>
+            </div>
+
+            <div class="mt-5">
+                <p class="panel-subtitle">Top Tags</p>
+                @if (topRecipeTags.length === 0) {
+                    <p class="empty-state">No tags yet.</p>
+                } @else {
+                    <div class="mt-2 space-y-2">
+                        @for (tag of topRecipeTags; track tag.name) {
+                            <div>
+                                <div class="mb-1 flex justify-between text-sm text-muted">
+                                    <p>{{ tag.name }}</p>
+                                    <p>{{ tag.count }}</p>
+                                </div>
+                                <div class="mini-track">
+                                    <div class="mini-fill mini-fill-recipe" [style.width.%]="tag.width"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </article>
+    </section>
+
+    <section class="mt-6 panel-card">
+        <p class="panel-title mb-3">Quick Tags and Topics</p>
+        <div class="flex flex-wrap gap-2">
+            @if (uniqueTopics.length === 0 && recipeTags.length === 0) {
+                <p class="empty-state">No topics or tags yet.</p>
+            }
+            @for (topic of uniqueTopics; track topic) {
+                <span class="pill topic-pill">{{ topic }}</span>
+            }
+            @for (tag of recipeTags; track tag) {
+                <span class="pill tag-pill">{{ tag }}</span>
             }
         </div>
-    </div>
+    </section>
 </div>
