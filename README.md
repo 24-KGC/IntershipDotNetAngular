@@ -6,28 +6,26 @@ The app supports user authentication and user-scoped CRUD for tasks and recipes.
 
 ```mermaid
 flowchart LR
-  U[User Browser] -->|HTTP :4200| SPA[Angular 21 Frontend<br/>Standalone components + Signals<br/>Reactive Forms + Tailwind]
+  U[User Browser] -->|http://localhost:4200| SPA[Angular 21 Frontend (ModernAngular)]
 
-  subgraph FE["Frontend (ModernAngular)"]
-    SPA --> GUARDS[Route Guards<br/>(protect /, /tasks, /recipes)]
-    SPA --> INTERCEPTOR[Auth Interceptor<br/>(adds Authorization: Bearer JWT)]
-    SPA --> STORES[Client State/Stores<br/>(TaskStoreService, RecipeStoreService)]
-    SPA --> ROUTES[Routes<br/>/login, /, /tasks, /recipes]
+  subgraph FE[Frontend]
+    SPA --> GUARDS[Route guards: protect /, /tasks, /recipes]
+    SPA --> INTERCEPTOR[Auth interceptor: adds Bearer JWT]
+    SPA --> ROUTES[Routes: /login, /, /tasks, /recipes]
   end
 
-  SPA -->|HTTPS /api/* :7076| API[ASP.NET Core Minimal API (.NET 10)<br/>dotnetBE]
+  SPA -->|https://localhost:7076/api| API[ASP.NET Core Minimal API (.NET 10) (dotnetBE)]
 
-  subgraph BE["Backend (dotnetBE)"]
-    API --> AUTHMW[AuthN/AuthZ Middleware<br/>JWT Bearer + Authorization]
-    API --> EP[Endpoint Groups<br/>/api/auth<br/>/api/tasks (authorized)<br/>/api/recipes (authorized)]
-    EP --> SVC[Services<br/>JwtTokenService]
-    EP --> EF[EF Core DbContext<br/>AppDbContext]
+  subgraph BE[Backend]
+    API --> AUTHMW[Auth middleware: JWT Bearer + Authorization]
+    API --> EP[Endpoints: /api/auth, /api/tasks, /api/recipes]
+    API --> EF[EF Core AppDbContext]
+    API --> ID[ASP.NET Core Identity]
     EF --> DB[(SQL Server / LocalDB)]
-    AUTHMW --> ID[ASP.NET Core Identity<br/>IdentityUser + stores]
     ID --> DB
   end
 
-  API -->|Dev only| SWAGGER[OpenAPI/Swagger UI<br/>/swagger]
+  API --> SWAGGER[Swagger/OpenAPI (dev)]
 ```
 
 ## Current Stack
