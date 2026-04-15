@@ -4,24 +4,31 @@ StudyBites is a full-stack practice project with an Angular frontend and an ASP.
 The app supports user authentication and user-scoped CRUD for tasks and recipes.
 ## Diagram
 
+```mermaid
 flowchart LR
-  U[User Browser] -->|http://localhost:4200| FE[Angular Frontend (ModernAngular)]
-  FE -->|https://localhost:7076/api| BE[ASP.NET Core Minimal API (.NET 10) (dotnetBE)]
-  BE --> DB[(SQL Server / LocalDB)]
+  U[User Browser] -->|HTTP :4200| SPA[Angular 21 Frontend<br/>Standalone components + Signals<br/>Reactive Forms + Tailwind]
 
-  FE --> GUARDS[Route guards]
-  FE --> INT[Auth interceptor adds Bearer JWT]
+  subgraph FE["Frontend (ModernAngular)"]
+    SPA --> GUARDS[Route Guards<br/>(protect /, /tasks, /recipes)]
+    SPA --> INTERCEPTOR[Auth Interceptor<br/>(adds Authorization: Bearer JWT)]
+    SPA --> STORES[Client State/Stores<br/>(TaskStoreService, RecipeStoreService)]
+    SPA --> ROUTES[Routes<br/>/login, /, /tasks, /recipes]
+  end
 
-  BE --> AUTH[Auth endpoints: /api/auth/register, /api/auth/login]
-  BE --> TASKS[Tasks endpoints: /api/tasks/* (auth)]
-  BE --> REC[Recipes endpoints: /api/recipes/* (auth)]
+  SPA -->|HTTPS /api/* :7076| API[ASP.NET Core Minimal API (.NET 10)<br/>dotnetBE]
 
-  BE --> ID[ASP.NET Core Identity]
-  BE --> JWT[JWT Bearer auth]
-  BE --> EF[EF Core AppDbContext]
+  subgraph BE["Backend (dotnetBE)"]
+    API --> AUTHMW[AuthN/AuthZ Middleware<br/>JWT Bearer + Authorization]
+    API --> EP[Endpoint Groups<br/>/api/auth<br/>/api/tasks (authorized)<br/>/api/recipes (authorized)]
+    EP --> SVC[Services<br/>JwtTokenService]
+    EP --> EF[EF Core DbContext<br/>AppDbContext]
+    EF --> DB[(SQL Server / LocalDB)]
+    AUTHMW --> ID[ASP.NET Core Identity<br/>IdentityUser + stores]
+    ID --> DB
+  end
 
-  ID --> DB
-  EF --> DB
+  API -->|Dev only| SWAGGER[OpenAPI/Swagger UI<br/>/swagger]
+```
 
 ## Current Stack
 
