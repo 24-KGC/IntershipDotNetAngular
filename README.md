@@ -6,10 +6,9 @@ The app supports user authentication and user-scoped CRUD for tasks and recipes.
 
 ```mermaid
 flowchart TB
-  U[User Browser] -->|http 4200| SPA[Angular 21 Frontend ModernAngular]
-
   subgraph FE[Frontend]
     direction LR
+    U[User Browser] -->|http 4200| SPA[Angular 21 Frontend ModernAngular]
     SPA --> GUARDS[Route guards]
     SPA --> INT[Auth interceptor adds Bearer JWT]
   end
