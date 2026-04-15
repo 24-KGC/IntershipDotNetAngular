@@ -2,6 +2,31 @@
 
 StudyBites is a full-stack practice project with an Angular frontend and an ASP.NET Core backend.
 The app supports user authentication and user-scoped CRUD for tasks and recipes.
+## Diagram
+
+flowchart LR
+  U[User Browser] -->|HTTP :4200| SPA[Angular 21 Frontend<br/>Standalone components + Signals<br/>Reactive Forms + Tailwind]
+
+  subgraph FE["Frontend (ModernAngular)"]
+    SPA --> GUARDS[Route Guards<br/>(protect /, /tasks, /recipes)]
+    SPA --> INTERCEPTOR[Auth Interceptor<br/>(adds Authorization: Bearer JWT)]
+    SPA --> STORES[Client State/Stores<br/>(TaskStoreService, RecipeStoreService)]
+    SPA --> ROUTES[Routes<br/>/login, /, /tasks, /recipes]
+  end
+
+  SPA -->|HTTPS /api/* :7076| API[ASP.NET Core Minimal API (.NET 10)<br/>dotnetBE]
+
+  subgraph BE["Backend (dotnetBE)"]
+    API --> AUTHMW[AuthN/AuthZ Middleware<br/>JWT Bearer + Authorization]
+    API --> EP[Endpoint Groups<br/>/api/auth<br/>/api/tasks (authorized)<br/>/api/recipes (authorized)]
+    EP --> SVC[Services<br/>JwtTokenService]
+    EP --> EF[EF Core DbContext<br/>AppDbContext]
+    EF --> DB[(SQL Server / LocalDB)]
+    AUTHMW --> ID[ASP.NET Core Identity<br/>IdentityUser + stores]
+    ID --> DB
+  end
+
+  API -->|Dev only| SWAGGER[OpenAPI/Swagger UI<br/>/swagger]
 
 ## Current Stack
 
