@@ -42,7 +42,8 @@ public static class TaskEndpoints
                 t.EstimatedMinutes,
                 t.ActualMinutes,
                 t.Done,
-                t.CreatedAt.ToString("O")))
+                t.CreatedAt.ToString("O"),
+                t.CompletedAt))
             .ToListAsync();
 
         return Results.Ok(result);
@@ -98,6 +99,7 @@ public static class TaskEndpoints
             EstimatedMinutes = request.EstimatedMinutes,
             ActualMinutes = request.ActualMinutes,
             Done = request.Done,
+            CompletedAt = request.CompletedAt,
             CreatedAt = ParseIsoDate(request.CreatedAt) ?? DateTimeOffset.UtcNow,
             OwnerUserId = userId
         };
@@ -134,6 +136,22 @@ public static class TaskEndpoints
         entity.Priority = request.Priority;
         entity.EstimatedMinutes = request.EstimatedMinutes;
         entity.ActualMinutes = request.ActualMinutes;
+        
+        // Update CompletedAt logic
+        if (request.Done && !entity.Done)
+        {
+            entity.CompletedAt = DateTimeOffset.UtcNow;
+        }
+        else if (!request.Done)
+        {
+            entity.CompletedAt = null;
+        }
+        else if (request.Done && entity.Done && request.CompletedAt.HasValue)
+        {
+            // Allow manual update if needed, but usually we keep what's there
+            entity.CompletedAt = request.CompletedAt;
+        }
+
         entity.Done = request.Done;
 
         await db.SaveChangesAsync();
@@ -214,6 +232,7 @@ public static class TaskEndpoints
             task.EstimatedMinutes,
             task.ActualMinutes,
             task.Done,
-            task.CreatedAt.ToString("O"));
+            task.CreatedAt.ToString("O"),
+            task.CompletedAt);
     }
 }

@@ -101,3 +101,34 @@ section h3 {
 .space-y-2.cdk-drop-list-dragging .cdk-drag {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
+
+.timer-display.active {
+  color: var(--primary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.btn-timer-start {
+  color: var(--success) !important;
+  border-color: var(--success) !important;
+}
+
+.btn-timer-start:hover {
+  background-color: color-mix(in oklch, var(--success) 20%, transparent) !important;
+}
+
+.btn-timer-stop {
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 10px color-mix(in oklch, var(--danger) 40%, transparent);
+}
+
+.btn-timer-stop:hover {
+  background-color: color-mix(in oklch, var(--danger) 20%, transparent) !important;
+}
+

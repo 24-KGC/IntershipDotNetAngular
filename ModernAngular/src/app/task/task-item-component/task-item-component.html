@@ -127,8 +127,12 @@
                       <p>Priority: {{ t.priority }}.</p>
                       <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
                       <p>
-                        Due: {{ t.dueDate | date: 'EEEE, MMMM d, y, HH:mm:ss' }}. Time:
-                        {{ getTimeRemaining(t, time$ | async) }}.
+                        Due: {{ t.dueDate | date: 'EEEE, MMMM d, y, HH:mm:ss' }}.
+                        @if (t.done) {
+                          <span class="text-success font-bold ml-1">{{ getCompletionEarlyBy(t) }}</span>
+                        } @else {
+                          Time: {{ getTimeRemaining(t, time$ | async) }}.
+                        }
                       </p>
                     </div>
                   }
@@ -144,6 +148,19 @@
                         [value]="t.actualMinutes"
                         (change)="updateActualTime(t, $any($event.target).value)"
                       />
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Timer</p>
+                      <div class="flex items-center gap-2">
+                        <span class="timer-display font-mono text-lg {{ activeTimerTaskId() === t.id ? 'active' : '' }}">
+                          {{ activeTimerTaskId() === t.id ? formatElapsed(elapsedSeconds()) : '00:00' }}
+                        </span>
+                        @if (activeTimerTaskId() !== t.id) {
+                          <button class="btn btn-timer-start p-1" type="button" (click)="startTimer(t)">▶</button>
+                        } @else {
+                          <button class="btn btn-timer-stop p-1" type="button" (click)="stopTimer(t)">■</button>
+                        }
+                      </div>
                     </div>
                     <div class="flex flex-col justify-center items-center">
                       <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Completed</p>

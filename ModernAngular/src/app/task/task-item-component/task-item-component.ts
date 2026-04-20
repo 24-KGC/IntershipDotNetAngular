@@ -26,6 +26,11 @@ export class TaskItemComponent {
   readonly sectionOrder = signal<string[]>([]);
   readonly taskOrder = signal<Record<string, number>>({});
 
+  // Timer signals
+  readonly activeTimerTaskId = signal<string | null>(null);
+  readonly elapsedSeconds = signal<number>(0);
+  private timerInterval: any = null;
+
   ngOnInit() {
     try {
       const savedSection = localStorage.getItem('sectionOrder');
@@ -34,6 +39,12 @@ export class TaskItemComponent {
       const savedTasks = localStorage.getItem('taskOrder');
       if (savedTasks) this.taskOrder.set(JSON.parse(savedTasks));
     } catch {}
+  }
+
+  ngOnDestroy() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
   }
 
   readonly loading = this.store.loading;
@@ -156,11 +167,54 @@ export class TaskItemComponent {
     this.store.updateTask({ ...t, done: !t.done }).subscribe();
   }
 
-  updateActualTime(t: TaskNote, minutes: string): void {
-    const actualMinutes = parseInt(minutes, 10);
+  updateActualTime(t: TaskNote, minutes: string | number): void {
+    const actualMinutes = typeof minutes === 'string' ? parseInt(minutes, 10) : minutes;
     if (!isNaN(actualMinutes) && actualMinutes >= 0) {
       this.store.updateTask({ ...t, actualMinutes }).subscribe();
     }
+  }
+
+  startTimer(t: TaskNote): void {
+    // If a timer is already running for a different task, stop it first
+    const currentActiveId = this.activeTimerTaskId();
+    if (currentActiveId && currentActiveId !== t.id) {
+      const activeTask = this.tasks.find(task => task.id === currentActiveId);
+      if (activeTask) {
+        this.stopTimer(activeTask);
+      }
+    }
+
+    this.activeTimerTaskId.set(t.id);
+    this.elapsedSeconds.set(0);
+    
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    
+    this.timerInterval = setInterval(() => {
+      this.elapsedSeconds.update(s => s + 1);
+    }, 1000);
+  }
+
+  stopTimer(t: TaskNote): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+
+    const elapsed = this.elapsedSeconds();
+    const addedMinutes = Math.ceil(elapsed / 60);
+    
+    if (addedMinutes > 0) {
+      this.updateActualTime(t, t.actualMinutes + addedMinutes);
+    }
+
+    this.activeTimerTaskId.set(null);
+    this.elapsedSeconds.set(0);
+  }
+
+  formatElapsed(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   isCompleted(task: TaskNote): boolean {
@@ -190,6 +244,31 @@ export class TaskItemComponent {
     const countdown = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
     return dueTime >= currentTime ? `${countdown} left` : `overdue by ${countdown}`;
+  }
+
+  getCompletionEarlyBy(task: TaskNote): string {
+    if (!task.dueDate || !task.completedAt) {
+      return '';
+    }
+
+    const dueTime = new Date(task.dueDate).getTime();
+    const completedTime = new Date(task.completedAt).getTime();
+    
+    if (Number.isNaN(dueTime) || Number.isNaN(completedTime)) {
+      return '';
+    }
+
+    const diffInSeconds = Math.floor(Math.abs(dueTime - completedTime) / 1000);
+    const days = Math.floor(diffInSeconds / 86400);
+    const hours = Math.floor((diffInSeconds % 86400) / 3600);
+    const minutes = Math.floor((diffInSeconds % 3600) / 60);
+    
+    let result = '';
+    if (days > 0) result += `${days}d `;
+    if (hours > 0) result += `${hours}h `;
+    result += `${minutes}m`;
+
+    return completedTime <= dueTime ? `Completed early by ${result}` : `Completed late by ${result}`;
   }
 
   get existingTopics(): string[] {

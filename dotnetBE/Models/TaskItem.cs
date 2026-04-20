@@ -29,6 +29,8 @@ public sealed class TaskItem
 
     public bool Done { get; set; }
 
+    public DateTimeOffset? CompletedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     [Required]

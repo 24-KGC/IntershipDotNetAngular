@@ -12,6 +12,7 @@ export interface TaskNote {
   actualMinutes: number;
   done: boolean;
   createdAt: string; 
+  completedAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -68,7 +69,8 @@ export class TaskStoreService {
       priority: updatedTask.priority,
       estimatedMinutes: updatedTask.estimatedMinutes,
       actualMinutes: updatedTask.actualMinutes,
-      done: updatedTask.done
+      done: updatedTask.done,
+      completedAt: updatedTask.completedAt
     };
 
     return this.http.put<TaskNote>(`${this.baseUrl}/${updatedTask.id}`, body).pipe(

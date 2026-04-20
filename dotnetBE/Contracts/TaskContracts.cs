@@ -9,7 +9,8 @@ public sealed record CreateTaskRequest(
     int EstimatedMinutes,
     int ActualMinutes,
     bool Done,
-    string CreatedAt);
+    string CreatedAt,
+    DateTimeOffset? CompletedAt = null);
 
 public sealed record UpdateTaskRequest(
     string Title,
@@ -18,7 +19,8 @@ public sealed record UpdateTaskRequest(
     int Priority,
     int EstimatedMinutes,
     int ActualMinutes,
-    bool Done);
+    bool Done,
+    DateTimeOffset? CompletedAt = null);
 
 public sealed record TaskResponse(
     string Id,
@@ -29,4 +31,5 @@ public sealed record TaskResponse(
     int EstimatedMinutes,
     int ActualMinutes,
     bool Done,
-    string CreatedAt);
+    string CreatedAt,
+    DateTimeOffset? CompletedAt = null);
