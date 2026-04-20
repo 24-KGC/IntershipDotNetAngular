@@ -1,8 +1,8 @@
 import { Component, ElementRef, ViewChild, inject, Input, signal } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe, CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropList, CdkDrag, CdkDropListGroup, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { ClockService } from '../../services/clock.service';
 
 export type TaskViewMode = 'default' | 'priority' | 'days' | 'weeks' | 'months' | 'years' | 'progress';
@@ -47,6 +47,7 @@ export class TaskItemComponent {
     title: ['', [Validators.required]],
     topic: [''],
     dueDate: [''], 
+    dueTime: [''], 
     priority: [1, [Validators.min(1), Validators.max(5)]],
     estimatedMinutes: [1, [Validators.min(1)]],
     actualMinutes: [0, [Validators.min(0)]],
@@ -55,11 +56,18 @@ export class TaskItemComponent {
 
   editTask(task: TaskNote): void {
     this.editingId.set(task.id);
-    const dueDate = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '';
+    let dueDate = '';
+    let dueTime = '';
+    if (task.dueDate) {
+      const d = new Date(task.dueDate);
+      dueDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      dueTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+    }
     this.form.patchValue({
       title: task.title,
       topic: task.topic,
       dueDate: dueDate,
+      dueTime: dueTime,
       priority: task.priority,
       estimatedMinutes: task.estimatedMinutes,
       actualMinutes: task.actualMinutes || 0,
@@ -74,6 +82,7 @@ export class TaskItemComponent {
       title: '',
       topic: '',
       dueDate: '',
+      dueTime: '',
       priority: 1,
       estimatedMinutes: 1,
       actualMinutes: 0,
@@ -94,11 +103,12 @@ export class TaskItemComponent {
       // Update existing task
       const task = this.tasks.find(t => t.id === editingId);
       if (task) {
+        const fullDueDate = v.dueDate && v.dueTime ? new Date(`${v.dueDate}T${v.dueTime}`).toISOString() : (v.dueDate ? new Date(v.dueDate).toISOString() : '');
         const updatedTask: TaskNote = {
           ...task,
           title: v.title.trim(),
           topic: v.topic.trim(),
-          dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
+          dueDate: fullDueDate,
           priority: v.priority,
           estimatedMinutes: v.estimatedMinutes,
           actualMinutes: v.actualMinutes,
@@ -113,11 +123,12 @@ export class TaskItemComponent {
       }
     } else {
       // Create new task
+      const fullDueDate = v.dueDate && v.dueTime ? new Date(`${v.dueDate}T${v.dueTime}`).toISOString() : (v.dueDate ? new Date(v.dueDate).toISOString() : '');
       const task: TaskNote = {
         id: crypto.randomUUID(),
         title: v.title.trim(),
         topic: v.topic.trim(),
-        dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
+        dueDate: fullDueDate,
         priority: v.priority,
         estimatedMinutes: v.estimatedMinutes,
         actualMinutes: v.actualMinutes,
@@ -131,6 +142,7 @@ export class TaskItemComponent {
             title: '',
             topic: '',
             dueDate: '',
+            dueTime: '',
             priority: 1,
             estimatedMinutes: 1,
             done: false,
@@ -142,6 +154,13 @@ export class TaskItemComponent {
 
   toggleDone(t: TaskNote): void {
     this.store.updateTask({ ...t, done: !t.done }).subscribe();
+  }
+
+  updateActualTime(t: TaskNote, minutes: string): void {
+    const actualMinutes = parseInt(minutes, 10);
+    if (!isNaN(actualMinutes) && actualMinutes >= 0) {
+      this.store.updateTask({ ...t, actualMinutes }).subscribe();
+    }
   }
 
   isCompleted(task: TaskNote): boolean {
@@ -314,18 +333,6 @@ export class TaskItemComponent {
 
     event.container.data.forEach((task, index) => {
       currentOrder[task.id] = index;
-      
-      if (event.previousContainer !== event.container) {
-          const newTopic = this.viewMode === 'default' ? groupTitle : undefined;
-          const newDone = this.viewMode === 'progress' ? (groupTitle === 'Completed' ? true : (groupTitle === 'In Progress' ? false : undefined)) : undefined;
-          
-          if (newTopic !== undefined || newDone !== undefined) {
-              const updatedTask = { ...task };
-              if (newTopic !== undefined) updatedTask.topic = newTopic;
-              if (newDone !== undefined) updatedTask.done = newDone;
-              this.store.updateTask(updatedTask).subscribe();
-          }
-      }
     });
 
     if (event.previousContainer !== event.container) {

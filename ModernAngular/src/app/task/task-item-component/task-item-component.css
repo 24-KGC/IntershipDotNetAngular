@@ -62,6 +62,18 @@ form input:not([type='checkbox']):focus {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--highlight) 35%, transparent);
 }
 
+input::-webkit-calendar-picker-indicator,
+input::-webkit-list-button {
+  filter: invert(1);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 180ms ease;
+}
+
+input::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.7;
+}
+
 section h3 {
   letter-spacing: 0.02em;
   font-weight: 700;

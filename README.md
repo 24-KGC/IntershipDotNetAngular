@@ -36,6 +36,7 @@ flowchart TB
 
 ## Version
 
+- 0.15: Refined task item UI, add time spent.
 - 0.14: Change the dashboard to be more useful, add drag and drop for task item.
 - 0.13: Change Task Item sorting to be more real.
 - 0.12: Polish UI

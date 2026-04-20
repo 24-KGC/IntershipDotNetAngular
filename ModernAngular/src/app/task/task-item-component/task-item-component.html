@@ -28,13 +28,19 @@
           <input class="border rounded-l pl-1" formControlName="title" placeholder="Title" />
         </p>
         <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-3 mt-2">
-          <input class="border rounded-l pl-1" formControlName="topic" placeholder="Topic" list="topics-list" />
+          <input
+            class="border rounded-l pl-1"
+            formControlName="topic"
+            placeholder="Topic"
+            list="topics-list"
+          />
           <datalist id="topics-list">
             @for (topic of existingTopics; track topic) {
               <option [value]="topic"></option>
             }
           </datalist>
           <input class="border rounded-l pl-1" type="date" formControlName="dueDate" />
+          <input class="border rounded-l pl-1" type="time" step="1" formControlName="dueTime" />
           <label>
             Priority (1-5):
             <input
@@ -64,19 +70,25 @@
       <div class="flex-1 min-w-0 flex items-center justify-end gap-2">
         @if (editingId()) {
           <button class="btn ml-4" type="button" (click)="cancelEdit()">Cancel</button>
-          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">Update task</button>
+          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">
+            Update task
+          </button>
         } @else {
-          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">Add task</button>
+          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">
+            Add task
+          </button>
         }
       </div>
       <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
     </li>
   </form>
   <div cdkDropListGroup>
-    <div class="ml-20 mt-4 w-[90%] space-y-4"
-         cdkDropList
-         (cdkDropListDropped)="dropSection($event)"
-         [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'">
+    <div
+      class="ml-20 mt-4 w-[90%] space-y-4"
+      cdkDropList
+      (cdkDropListDropped)="dropSection($event)"
+      [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'"
+    >
       @for (group of groupedTasks; track group.title) {
         <section cdkDrag>
           <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2" cdkDragHandle>
@@ -85,55 +97,72 @@
             }
             {{ group.title }}
           </h3>
-          <ul class="space-y-2 min-h-[50px] p-2 -ml-2 rounded-xl transition-colors"
-              cdkDropList
-              [id]="group.title"
-              [cdkDropListData]="group.tasks"
-              (cdkDropListDropped)="dropTask($event, group.title)"
-              [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'">
+          <ul
+            class="space-y-2 min-h-[50px] p-2 -ml-2 rounded-xl transition-colors"
+            cdkDropList
+            [id]="group.title"
+            [cdkDropListData]="group.tasks"
+            (cdkDropListDropped)="dropTask($event, group.title)"
+            [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'"
+          >
             @for (t of group.tasks; track t.id; let i = $index) {
-            <li cdkDrag
-              class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row {{ t.done ? 'border-success' : (isOverdue(t) ? 'border-danger' : '') }}"
-            >
-              <div class="flex flex-col shrink-0">
-                <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1 flex items-center gap-2">
-                  @if (viewMode === 'default' || viewMode === 'progress') {
-                    <span cdkDragHandle class="cursor-move text-muted text-sm px-1">⋮⋮</span>
+              <li
+                cdkDrag
+                class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row {{
+                  t.done ? 'border-success' : isOverdue(t) ? 'border-danger' : ''
+                }}"
+              >
+                <div class="flex flex-col shrink-0">
+                  <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1 flex items-center gap-2">
+                    @if (viewMode === 'default' || viewMode === 'progress') {
+                      <span cdkDragHandle class="cursor-move text-muted text-sm px-1">⋮⋮</span>
+                    }
+                    {{ i + 1 }}. {{ t.title }}
+                  </p>
+                  @if (!collapsed) {
+                    <div
+                      class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2"
+                    >
+                      <p>{{ t.topic }}.</p>
+                      <p>Priority: {{ t.priority }}.</p>
+                      <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
+                      <p>
+                        Due: {{ t.dueDate | date: 'EEEE, MMMM d, y, HH:mm:ss' }}. Time:
+                        {{ getTimeRemaining(t, time$ | async) }}.
+                      </p>
+                    </div>
                   }
-                  {{ i + 1 }}. {{ t.title }}
-                </p>
+                </div>
                 @if (!collapsed) {
-                  <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2">
-                    <p>{{ t.topic }}.</p>
-                    <p>Priority: {{ t.priority }}.</p>
-                    <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
-                    <p>
-                      Due: {{ t.dueDate | date: 'EEEE, MMMM d, y' }}. Time:
-                      {{ getTimeRemaining(t, time$ | async) }}.
-                    </p>
+                  <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
+                    <div class="flex flex-col items-center">
+                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Time spent</p>
+                      <input
+                        class="border rounded-lg pl-1 w-20 text-center"
+                        type="number"
+                        min="0"
+                        [value]="t.actualMinutes"
+                        (change)="updateActualTime(t, $any($event.target).value)"
+                      />
+                    </div>
+                    <div class="flex flex-col justify-center items-center">
+                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Completed</p>
+                      <input
+                        class="task-checkbox"
+                        type="checkbox"
+                        [checked]="t.done"
+                        (change)="toggleDone(t)"
+                      />
+                    </div>
+                    <button class="btn ml-4" type="button" (click)="editTask(t)">Edit</button>
+                    <button class="btn ml-4" type="button" (click)="remove(t)">Delete</button>
                   </div>
                 }
-              </div>
-              @if (!collapsed) {
-                <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
-                  <div class="flex flex-col justify-center">
-                    <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
-                    <input
-                      class="task-checkbox ml-3"
-                      type="checkbox"
-                      [checked]="t.done"
-                      (change)="toggleDone(t)"
-                    />
-                  </div>
-                  <button class="btn ml-4" type="button" (click)="editTask(t)">Edit</button>
-                  <button class="btn ml-4" type="button" (click)="remove(t)">Delete</button>
-                </div>
-              }
-            </li>
-          }
-        </ul>
-      </section>
-    }
+              </li>
+            }
+          </ul>
+        </section>
+      }
     </div>
   </div>
 </div>

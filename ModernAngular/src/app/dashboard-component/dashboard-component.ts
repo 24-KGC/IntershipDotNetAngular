@@ -54,9 +54,18 @@ export class DashboardComponent implements OnInit {
       return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
     }
     if (view === 'week') {
-      const firstDay = new Date(now.setDate(now.getDate() - now.getDay()));
-      const lastDay = new Date(now.setDate(now.getDate() - now.getDay() + 6));
-      return d >= firstDay && d <= lastDay;
+      const startOfWeek = new Date(now);
+      const day = startOfWeek.getDay();
+      // Adjust so Monday is 1 and Sunday is 7
+      const diff = startOfWeek.getDate() - (day === 0 ? 6 : day - 1);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      return d >= startOfWeek && d <= endOfWeek;
     }
     return true;
   }
