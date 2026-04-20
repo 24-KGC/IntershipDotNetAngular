@@ -2,9 +2,9 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { DatePipe, AsyncPipe, DecimalPipe } from '@angular/common';
 import { ClockService } from '../../services/clock.service';
-import { TaskItemComponent } from '../task-item-component/task-item-component';
+import { TaskItemComponent, TaskViewMode } from '../task-item-component/task-item-component';
 
-type SortField = 'id' | 'topic' | 'dueDate' | 'priority' | 'estimatedMinutes';
+type SortField = 'dateAdded' | 'estimatedMinutes';
 
 @Component({
   selector: 'app-tasks-page-component',
@@ -34,6 +34,7 @@ export class TasksPageComponent implements OnInit {
   });
   private currentSortField: SortField | null = null;
   private ascending = true;
+  viewMode: TaskViewMode = 'default';
 
   ngOnInit(): void {
     this.store.loadTasks().subscribe({
@@ -85,24 +86,10 @@ export class TasksPageComponent implements OnInit {
       let result = 0;
 
       switch (field) {
-        case 'id':
+        case 'dateAdded': {
           result = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
-        case 'topic':
-          result = a.topic.localeCompare(b.topic, undefined, { sensitivity: 'base' });
-          break;
-        case 'dueDate': {
-          const aEmpty = !a.dueDate;
-          const bEmpty = !b.dueDate;
-          if (aEmpty && bEmpty) result = 0;
-          else if (aEmpty) result = 1;
-          else if (bEmpty) result = -1;
-          else result = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-          break;
         }
-        case 'priority':
-          result = a.priority - b.priority;
-          break;
         case 'estimatedMinutes':
           result = a.estimatedMinutes - b.estimatedMinutes;
           break;
@@ -112,5 +99,9 @@ export class TasksPageComponent implements OnInit {
     });
 
     this.store.tasks.set(sorted);
+  }
+
+  setViewMode(mode: TaskViewMode): void {
+    this.viewMode = mode;
   }
 }

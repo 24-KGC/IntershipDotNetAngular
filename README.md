@@ -11,7 +11,8 @@ The app supports user authentication and user-scoped CRUD for tasks and recipes.
 
 ## Version
 
-- 0.12: Polish UI 
+- 0.13: Change Task Item sorting to be more real.
+- 0.12: Polish UI
 - 0.11: Refractor to split program.cs into multi files handing logic.
 - 0.10: Added recipe page and completed most of the original features, minor changes.
 - 0.06: Added search bar and divided tasks into section.

@@ -12,22 +12,23 @@
         </div>
 
         <div class="task-toolbar w-full lg:w-[65%]">
-            <div class="flex flex-row flex-wrap gap-3">
-                <button class="btn" [class.sort-active]="isSortActive('id')" type="button" (click)="sortBy('id')">
-                ID <span class="sort-arrow">{{ getSortArrow('id') }}</span>
-                </button>
-                <button class="btn" [class.sort-active]="isSortActive('topic')" type="button" (click)="sortBy('topic')">
-                Topic <span class="sort-arrow">{{ getSortArrow('topic') }}</span>
-                </button>
-                <button class="btn" [class.sort-active]="isSortActive('dueDate')" type="button" (click)="sortBy('dueDate')">
-                DueDate <span class="sort-arrow">{{ getSortArrow('dueDate') }}</span>
-                </button>
-                <button class="btn" [class.sort-active]="isSortActive('priority')" type="button" (click)="sortBy('priority')">
-                Priority <span class="sort-arrow">{{ getSortArrow('priority') }}</span>
+            <div class="flex flex-row flex-wrap gap-3 items-center">
+                <span class="text-muted mr-2">View:</span>
+                <button class="btn" [class.sort-active]="viewMode === 'default'" type="button" (click)="setViewMode('default')">Default</button>
+                <button class="btn" [class.sort-active]="viewMode === 'priority'" type="button" (click)="setViewMode('priority')">Priority</button>
+                <button class="btn" [class.sort-active]="viewMode === 'days'" type="button" (click)="setViewMode('days')">Days</button>
+                <button class="btn" [class.sort-active]="viewMode === 'weeks'" type="button" (click)="setViewMode('weeks')">Weeks</button>
+                <button class="btn" [class.sort-active]="viewMode === 'months'" type="button" (click)="setViewMode('months')">Months</button>
+                <button class="btn" [class.sort-active]="viewMode === 'years'" type="button" (click)="setViewMode('years')">Years</button>
+
+                <span class="text-muted ml-4 mr-2">Sort:</span>
+                <button class="btn" [class.sort-active]="isSortActive('dateAdded')" type="button" (click)="sortBy('dateAdded')">
+                Date Added <span class="sort-arrow">{{ getSortArrow('dateAdded') }}</span>
                 </button>
                 <button class="btn" [class.sort-active]="isSortActive('estimatedMinutes')" type="button" (click)="sortBy('estimatedMinutes')">
-                Estimated Minutes <span class="sort-arrow">{{ getSortArrow('estimatedMinutes') }}</span>
+                Est. Minutes <span class="sort-arrow">{{ getSortArrow('estimatedMinutes') }}</span>
                 </button>
+                
                 <button class="btn ml-8" type="button" (click)="toggleCollapsed()">
                 {{ collapsed ? 'List' : 'Collapse' }}
                 </button>
@@ -45,5 +46,5 @@
         </div>
     </div>
 
-    <app-task-item-component [collapsed]="collapsed" [tasks]="filteredTasks()"></app-task-item-component>
+    <app-task-item-component [collapsed]="collapsed" [tasks]="filteredTasks()" [viewMode]="viewMode"></app-task-item-component>
 </div>

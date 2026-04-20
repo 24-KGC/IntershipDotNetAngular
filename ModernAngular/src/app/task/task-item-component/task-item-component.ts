@@ -3,6 +3,9 @@ import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ClockService } from '../../services/clock.service';
+
+export type TaskViewMode = 'default' | 'priority' | 'days' | 'weeks' | 'months' | 'years';
+
 @Component({
   selector: 'app-task-item-component',
   standalone: true,
@@ -16,6 +19,9 @@ export class TaskItemComponent {
   private clock = inject(ClockService);
 
   @Input() tasks: TaskNote[] = [];
+  @Input() collapsed = false;
+  @Input() viewMode: TaskViewMode = 'default';
+
   readonly loading = this.store.loading;
   readonly error = this.store.error;
   readonly time$ = this.clock.time$;
@@ -160,12 +166,75 @@ export class TaskItemComponent {
     return this.tasks.filter((task) => this.isOverdue(task));
   }
 
+  get groupedTasks(): { title: string, tasks: TaskNote[] }[] {
+    if (this.viewMode === 'default') {
+      return [
+        { title: 'In Progress', tasks: this.inProgressTasks },
+        { title: 'Completed', tasks: this.completedTasks },
+        { title: 'Overdue', tasks: this.overduedTasks }
+      ];
+    }
+
+    if (this.viewMode === 'priority') {
+      return [5, 4, 3, 2, 1].map(p => ({
+        title: `Priority ${p}`,
+        tasks: this.tasks.filter(t => t.priority === p)
+      })).filter(g => g.tasks.length > 0); 
+    }
+
+    const groups = new Map<string, TaskNote[]>();
+    const noDateTasks: TaskNote[] = [];
+
+    this.tasks.forEach(task => {
+      if (!task.dueDate) {
+        noDateTasks.push(task);
+        return;
+      }
+
+      const date = new Date(task.dueDate);
+      let key = '';
+
+      if (this.viewMode === 'days') {
+        key = date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      } else if (this.viewMode === 'weeks') {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+        key = `Week of ${monday.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`;
+      } else if (this.viewMode === 'months') {
+        key = `${date.toLocaleString(undefined, { month: 'long' })} ${date.getFullYear()}`;
+      } else if (this.viewMode === 'years') {
+        key = `${date.getFullYear()}`;
+      }
+
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(task);
+    });
+
+    const result: { title: string, tasks: TaskNote[], timestamp: number }[] = [];
+    groups.forEach((tasks, title) => {
+      result.push({ title, tasks, timestamp: new Date(tasks[0].dueDate!).getTime() });
+    });
+
+    result.sort((a, b) => a.timestamp - b.timestamp);
+
+    const finalResult: { title: string, tasks: TaskNote[] }[] = result.map(r => ({ title: r.title, tasks: r.tasks }));
+
+    if (noDateTasks.length > 0) {
+      finalResult.push({ title: 'No Due Date', tasks: noDateTasks });
+    }
+
+    return finalResult;
+  }
+
   remove(t: TaskNote): void {
     this.store.deleteTask(t.id).subscribe();
   }
 
   trackById = (_: number, t: TaskNote) => t.id;
-  @Input() collapsed = false;
 
   private scrollEditFormIntoView(): void {
     this.taskEditFormAnchor?.nativeElement.scrollIntoView({
