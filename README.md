@@ -2,6 +2,7 @@
 
 StudyBites is a full-stack practice project with an Angular frontend and an ASP.NET Core backend.
 The app supports user authentication and user-scoped CRUD for tasks and recipes.
+
 ## Diagram
 
 ```mermaid
