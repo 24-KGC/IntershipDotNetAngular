@@ -28,7 +28,12 @@
           <input class="border rounded-l pl-1" formControlName="title" placeholder="Title" />
         </p>
         <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-3 mt-2">
-          <input class="border rounded-l pl-1" formControlName="topic" placeholder="Topic" />
+          <input class="border rounded-l pl-1" formControlName="topic" placeholder="Topic" list="topics-list" />
+          <datalist id="topics-list">
+            @for (topic of existingTopics; track topic) {
+              <option [value]="topic"></option>
+            }
+          </datalist>
           <input class="border rounded-l pl-1" type="date" formControlName="dueDate" />
           <label>
             Priority (1-5):
@@ -51,7 +56,7 @@
               type="number"
               min="1"
               formControlName="estimatedMinutes"
-              placeholder="Estimated Minutes"
+              placeholder="Est. Mins"
             />
           </label>
         </div>
@@ -67,17 +72,36 @@
       <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
     </li>
   </form>
-  <div class="ml-20 mt-4 w-[90%] space-y-4">
-    @for (group of groupedTasks; track group.title) {
-      <section>
-        <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">{{ group.title }}</h3>
-        <ul class="space-y-2">
-          @for (t of group.tasks; track t.id; let i = $index) {
-            <li
+  <div cdkDropListGroup>
+    <div class="ml-20 mt-4 w-[90%] space-y-4"
+         cdkDropList
+         (cdkDropListDropped)="dropSection($event)"
+         [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'">
+      @for (group of groupedTasks; track group.title) {
+        <section cdkDrag>
+          <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2" cdkDragHandle>
+            @if (viewMode === 'default' || viewMode === 'progress') {
+              <span class="cursor-move mr-2 text-muted">≡</span>
+            }
+            {{ group.title }}
+          </h3>
+          <ul class="space-y-2 min-h-[50px] p-2 -ml-2 rounded-xl transition-colors"
+              cdkDropList
+              [id]="group.title"
+              [cdkDropListData]="group.tasks"
+              (cdkDropListDropped)="dropTask($event, group.title)"
+              [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'">
+            @for (t of group.tasks; track t.id; let i = $index) {
+            <li cdkDrag
               class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row {{ t.done ? 'border-success' : (isOverdue(t) ? 'border-danger' : '') }}"
             >
               <div class="flex flex-col shrink-0">
-                <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">{{ i + 1 }}. {{ t.title }}</p>
+                <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1 flex items-center gap-2">
+                  @if (viewMode === 'default' || viewMode === 'progress') {
+                    <span cdkDragHandle class="cursor-move text-muted text-sm px-1">⋮⋮</span>
+                  }
+                  {{ i + 1 }}. {{ t.title }}
+                </p>
                 @if (!collapsed) {
                   <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2">
                     <p>{{ t.topic }}.</p>
@@ -110,5 +134,6 @@
         </ul>
       </section>
     }
+    </div>
   </div>
 </div>

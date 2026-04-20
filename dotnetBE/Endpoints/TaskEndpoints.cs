@@ -40,6 +40,7 @@ public static class TaskEndpoints
                 t.DueDate.HasValue ? t.DueDate.Value.ToString("O") : string.Empty,
                 t.Priority,
                 t.EstimatedMinutes,
+                t.ActualMinutes,
                 t.Done,
                 t.CreatedAt.ToString("O")))
             .ToListAsync();
@@ -67,7 +68,7 @@ public static class TaskEndpoints
             return Results.Unauthorized();
         }
 
-        var validation = ValidateTaskInput(request.Title, request.Priority, request.EstimatedMinutes);
+        var validation = ValidateTaskInput(request.Title, request.Priority, request.EstimatedMinutes, request.ActualMinutes);
         if (validation is not null)
         {
             return validation;
@@ -95,6 +96,7 @@ public static class TaskEndpoints
             DueDate = request.DueDate,
             Priority = request.Priority,
             EstimatedMinutes = request.EstimatedMinutes,
+            ActualMinutes = request.ActualMinutes,
             Done = request.Done,
             CreatedAt = ParseIsoDate(request.CreatedAt) ?? DateTimeOffset.UtcNow,
             OwnerUserId = userId
@@ -114,7 +116,7 @@ public static class TaskEndpoints
             return Results.Unauthorized();
         }
 
-        var validation = ValidateTaskInput(request.Title, request.Priority, request.EstimatedMinutes);
+        var validation = ValidateTaskInput(request.Title, request.Priority, request.EstimatedMinutes, request.ActualMinutes);
         if (validation is not null)
         {
             return validation;
@@ -131,6 +133,7 @@ public static class TaskEndpoints
         entity.DueDate = ParseIsoDate(request.DueDate);
         entity.Priority = request.Priority;
         entity.EstimatedMinutes = request.EstimatedMinutes;
+        entity.ActualMinutes = request.ActualMinutes;
         entity.Done = request.Done;
 
         await db.SaveChangesAsync();
@@ -161,7 +164,7 @@ public static class TaskEndpoints
         return user.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 
-    private static IResult? ValidateTaskInput(string title, int priority, int estimatedMinutes)
+    private static IResult? ValidateTaskInput(string title, int priority, int estimatedMinutes, int actualMinutes)
     {
         var errors = new Dictionary<string, string[]>();
 
@@ -178,6 +181,11 @@ public static class TaskEndpoints
         if (estimatedMinutes < 1)
         {
             errors["estimatedMinutes"] = ["Estimated minutes must be greater than 0."];
+        }
+        
+        if (actualMinutes < 0)
+        {
+            errors["actualMinutes"] = ["Actual minutes cannot be negative."];
         }
 
         return errors.Count > 0 ? Results.ValidationProblem(errors) : null;
@@ -204,6 +212,7 @@ public static class TaskEndpoints
             task.DueDate?.ToString("O") ?? string.Empty,
             task.Priority,
             task.EstimatedMinutes,
+            task.ActualMinutes,
             task.Done,
             task.CreatedAt.ToString("O"));
     }

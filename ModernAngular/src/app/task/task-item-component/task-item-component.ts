@@ -2,14 +2,15 @@ import { Component, ElementRef, ViewChild, inject, Input, signal } from '@angula
 import { TaskNote, TaskStoreService } from '../../services/task-store.service';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ClockService } from '../../services/clock.service';
 
-export type TaskViewMode = 'default' | 'priority' | 'days' | 'weeks' | 'months' | 'years';
+export type TaskViewMode = 'default' | 'priority' | 'days' | 'weeks' | 'months' | 'years' | 'progress';
 
 @Component({
   selector: 'app-task-item-component',
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe, AsyncPipe],
+  imports: [ReactiveFormsModule, DatePipe, AsyncPipe, DragDropModule],
   templateUrl: './task-item-component.html',
   styleUrl: './task-item-component.css',
 })
@@ -21,6 +22,19 @@ export class TaskItemComponent {
   @Input() tasks: TaskNote[] = [];
   @Input() collapsed = false;
   @Input() viewMode: TaskViewMode = 'default';
+
+  readonly sectionOrder = signal<string[]>([]);
+  readonly taskOrder = signal<Record<string, number>>({});
+
+  ngOnInit() {
+    try {
+      const savedSection = localStorage.getItem('sectionOrder');
+      if (savedSection) this.sectionOrder.set(JSON.parse(savedSection));
+      
+      const savedTasks = localStorage.getItem('taskOrder');
+      if (savedTasks) this.taskOrder.set(JSON.parse(savedTasks));
+    } catch {}
+  }
 
   readonly loading = this.store.loading;
   readonly error = this.store.error;
@@ -35,6 +49,7 @@ export class TaskItemComponent {
     dueDate: [''], 
     priority: [1, [Validators.min(1), Validators.max(5)]],
     estimatedMinutes: [1, [Validators.min(1)]],
+    actualMinutes: [0, [Validators.min(0)]],
     done: [false],
   });
 
@@ -47,6 +62,7 @@ export class TaskItemComponent {
       dueDate: dueDate,
       priority: task.priority,
       estimatedMinutes: task.estimatedMinutes,
+      actualMinutes: task.actualMinutes || 0,
       done: task.done,
     });
     this.scrollEditFormIntoView();
@@ -60,6 +76,7 @@ export class TaskItemComponent {
       dueDate: '',
       priority: 1,
       estimatedMinutes: 1,
+      actualMinutes: 0,
       done: false,
     });
   }
@@ -84,6 +101,7 @@ export class TaskItemComponent {
           dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
           priority: v.priority,
           estimatedMinutes: v.estimatedMinutes,
+          actualMinutes: v.actualMinutes,
           done: v.done,
         };
 
@@ -102,6 +120,7 @@ export class TaskItemComponent {
         dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : '',
         priority: v.priority,
         estimatedMinutes: v.estimatedMinutes,
+        actualMinutes: v.actualMinutes,
         done: v.done,
         createdAt: new Date().toISOString(),
       };
@@ -154,6 +173,14 @@ export class TaskItemComponent {
     return dueTime >= currentTime ? `${countdown} left` : `overdue by ${countdown}`;
   }
 
+  get existingTopics(): string[] {
+    const topics = new Set<string>();
+    this.tasks.forEach(t => {
+      if (t.topic && t.topic.trim()) topics.add(t.topic.trim());
+    });
+    return Array.from(topics).sort();
+  }
+
   get inProgressTasks(): TaskNote[] {
     return this.tasks.filter((task) => !this.isCompleted(task) && !this.isOverdue(task));
   }
@@ -166,68 +193,149 @@ export class TaskItemComponent {
     return this.tasks.filter((task) => this.isOverdue(task));
   }
 
+  get connectedLists(): string[] {
+    return this.groupedTasks.map(g => g.title);
+  }
+
   get groupedTasks(): { title: string, tasks: TaskNote[] }[] {
-    if (this.viewMode === 'default') {
-      return [
+    let result: { title: string, tasks: TaskNote[], timestamp?: number }[] = [];
+
+    if (this.viewMode === 'progress') {
+      result = [
         { title: 'In Progress', tasks: this.inProgressTasks },
         { title: 'Completed', tasks: this.completedTasks },
         { title: 'Overdue', tasks: this.overduedTasks }
       ];
-    }
-
-    if (this.viewMode === 'priority') {
-      return [5, 4, 3, 2, 1].map(p => ({
+    } else if (this.viewMode === 'default') {
+      const groups = new Map<string, TaskNote[]>();
+      this.tasks.forEach(t => {
+        const key = t.topic ? t.topic.trim() : 'No Topic';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(t);
+      });
+      result = Array.from(groups.entries())
+        .map(([title, tasks]) => ({ title, tasks }))
+        .sort((a, b) => a.title.localeCompare(b.title));
+    } else if (this.viewMode === 'priority') {
+      result = [5, 4, 3, 2, 1].map(p => ({
         title: `Priority ${p}`,
         tasks: this.tasks.filter(t => t.priority === p)
       })).filter(g => g.tasks.length > 0); 
+    } else {
+      const groups = new Map<string, TaskNote[]>();
+      const noDateTasks: TaskNote[] = [];
+
+      this.tasks.forEach(task => {
+        if (!task.dueDate) {
+          noDateTasks.push(task);
+          return;
+        }
+
+        const date = new Date(task.dueDate);
+        let key = '';
+
+        if (this.viewMode === 'days') {
+          key = date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        } else if (this.viewMode === 'weeks') {
+          const d = new Date(date);
+          const day = d.getDay();
+          const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+          const monday = new Date(d.setDate(diff));
+          key = `Week of ${monday.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        } else if (this.viewMode === 'months') {
+          key = `${date.toLocaleString(undefined, { month: 'long' })} ${date.getFullYear()}`;
+        } else if (this.viewMode === 'years') {
+          key = `${date.getFullYear()}`;
+        }
+
+        if (!groups.has(key)) {
+          groups.set(key, []);
+        }
+        groups.get(key)!.push(task);
+      });
+
+      groups.forEach((tasks, title) => {
+        result.push({ title, tasks, timestamp: new Date(tasks[0].dueDate!).getTime() });
+      });
+
+      result.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+      if (noDateTasks.length > 0) {
+        result.push({ title: 'No Due Date', tasks: noDateTasks });
+      }
     }
 
-    const groups = new Map<string, TaskNote[]>();
-    const noDateTasks: TaskNote[] = [];
-
-    this.tasks.forEach(task => {
-      if (!task.dueDate) {
-        noDateTasks.push(task);
-        return;
-      }
-
-      const date = new Date(task.dueDate);
-      let key = '';
-
-      if (this.viewMode === 'days') {
-        key = date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      } else if (this.viewMode === 'weeks') {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(d.setDate(diff));
-        key = `Week of ${monday.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`;
-      } else if (this.viewMode === 'months') {
-        key = `${date.toLocaleString(undefined, { month: 'long' })} ${date.getFullYear()}`;
-      } else if (this.viewMode === 'years') {
-        key = `${date.getFullYear()}`;
-      }
-
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(task);
-    });
-
-    const result: { title: string, tasks: TaskNote[], timestamp: number }[] = [];
-    groups.forEach((tasks, title) => {
-      result.push({ title, tasks, timestamp: new Date(tasks[0].dueDate!).getTime() });
-    });
-
-    result.sort((a, b) => a.timestamp - b.timestamp);
-
-    const finalResult: { title: string, tasks: TaskNote[] }[] = result.map(r => ({ title: r.title, tasks: r.tasks }));
-
-    if (noDateTasks.length > 0) {
-      finalResult.push({ title: 'No Due Date', tasks: noDateTasks });
+    // Sort the tasks within each section by local storage order for drag and drop views
+    if (this.viewMode === 'default' || this.viewMode === 'progress') {
+        const orderDict = this.taskOrder();
+        result.forEach(group => {
+            group.tasks.sort((a, b) => (orderDict[a.id] || 0) - (orderDict[b.id] || 0));
+        });
     }
 
-    return finalResult;
+    // Reorder sections based on saved sectionOrder
+    if (this.viewMode === 'default' || this.viewMode === 'progress') {
+        const order = this.sectionOrder();
+        if (order && order.length > 0) {
+            result.sort((a, b) => {
+                const iA = order.indexOf(a.title);
+                const iB = order.indexOf(b.title);
+                if (iA !== -1 && iB !== -1) return iA - iB;
+                if (iA !== -1) return -1;
+                if (iB !== -1) return 1;
+                return 0;
+            });
+        }
+    }
+
+    return result.map(r => ({ title: r.title, tasks: r.tasks }));
+  }
+
+  dropSection(event: CdkDragDrop<any[]>) {
+    const currentGroups = this.groupedTasks.map(g => g.title);
+    moveItemInArray(currentGroups, event.previousIndex, event.currentIndex);
+    this.sectionOrder.set(currentGroups);
+    localStorage.setItem('sectionOrder', JSON.stringify(currentGroups));
+  }
+
+  dropTask(event: CdkDragDrop<TaskNote[]>, groupTitle: string) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+    }
+
+    const currentOrder = { ...this.taskOrder() };
+
+    event.container.data.forEach((task, index) => {
+      currentOrder[task.id] = index;
+      
+      if (event.previousContainer !== event.container) {
+          const newTopic = this.viewMode === 'default' ? groupTitle : undefined;
+          const newDone = this.viewMode === 'progress' ? (groupTitle === 'Completed' ? true : (groupTitle === 'In Progress' ? false : undefined)) : undefined;
+          
+          if (newTopic !== undefined || newDone !== undefined) {
+              const updatedTask = { ...task };
+              if (newTopic !== undefined) updatedTask.topic = newTopic;
+              if (newDone !== undefined) updatedTask.done = newDone;
+              this.store.updateTask(updatedTask).subscribe();
+          }
+      }
+    });
+
+    if (event.previousContainer !== event.container) {
+      event.previousContainer.data.forEach((task, index) => {
+        currentOrder[task.id] = index;
+      });
+    }
+
+    this.taskOrder.set(currentOrder);
+    localStorage.setItem('taskOrder', JSON.stringify(currentOrder));
   }
 
   remove(t: TaskNote): void {

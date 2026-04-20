@@ -6,7 +6,7 @@
   border: 1px solid color-mix(in oklch, var(--highlight) 40%, transparent);
   cursor: pointer;
   background: linear-gradient(135deg, var(--secondary), color-mix(in oklch, var(--secondary) 85%, black));
-  color: var(--text);
+  
   box-shadow: 0 4px 6px color-mix(in oklch, var(--bg-dark) 50%, transparent);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -33,7 +33,6 @@
   background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 85%, black));
   border-color: var(--highlight);
   box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 40%, transparent);
-  color: white;
 }
 
 .sort-arrow {

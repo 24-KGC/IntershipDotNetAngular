@@ -1,19 +1,23 @@
-import { Component, inject } from '@angular/core';
-import { DatePipe, DecimalPipe, AsyncPipe  } from '@angular/common';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { DatePipe, DecimalPipe, AsyncPipe, TitleCasePipe } from '@angular/common';
 import { ClockService } from '../services/clock.service';
 import { TaskStoreService } from '../services/task-store.service';
 import { RecipeStoreService } from '../services/recipe-store.service';
-
+import { NgxEchartsDirective } from 'ngx-echarts';
+import type { EChartsOption } from 'echarts';
 import { map } from 'rxjs';
+
+type DashboardView = 'today' | 'week' | 'month' | 'year' | 'all';
+
 @Component({
   selector: 'app-dashboard-component',
   standalone: true,
-  imports: [DatePipe, AsyncPipe, DecimalPipe],
+  imports: [DatePipe, AsyncPipe, DecimalPipe, TitleCasePipe, NgxEchartsDirective],
   templateUrl: './dashboard-component.html',
   styleUrl: './dashboard-component.css',
 })
-export class DashboardComponent {
-  Math = Math; // for template 
+export class DashboardComponent implements OnInit {
+  Math = Math;
   clock = inject(ClockService);          
   time$ = this.clock.time$;     
 
@@ -23,132 +27,249 @@ export class DashboardComponent {
   readonly tasks = this.store.tasks;
   readonly recipes = this.recipeStore.recipes;
   
+  dashboardView = signal<DashboardView>('month');
+
   ngOnInit(): void {
-    this.store.loadTasks().subscribe({
-      error: () => {
-        // Error is tracked in store.
-      }
-    });
-
-    this.recipeStore.loadRecipes().subscribe({
-      error: () => {
-        // Error is tracked in store.
-      }
-    });
-  }
-  
-  get totalEstimatedMinutes(): number {
-    return this.tasks()
-      .filter(t => !t.done)
-      .reduce((sum, t) => sum + t.estimatedMinutes, 0);
+    this.store.loadTasks().subscribe();
+    this.recipeStore.loadRecipes().subscribe();
   }
 
-  get remainingTasksCount(): number {
-    return this.tasks().filter(t => !t.done).length;
+  setView(view: DashboardView) {
+    this.dashboardView.set(view);
   }
 
-  get completedTasksCount(): number {
-    return this.tasks().filter(t => t.done).length;
-  }
-
-  get taskCompletionPercent(): number {
-    const total = this.tasks().length;
-    if (!total) {
-      return 0;
+  private isDateInView(dateString: string | undefined | null, view: DashboardView): boolean {
+    if (!dateString) return false;
+    const d = new Date(dateString);
+    const now = new Date();
+    
+    if (view === 'all') return true;
+    if (view === 'today') {
+      return d.toDateString() === now.toDateString();
     }
+    if (view === 'year') {
+      return d.getFullYear() === now.getFullYear();
+    }
+    if (view === 'month') {
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }
+    if (view === 'week') {
+      const firstDay = new Date(now.setDate(now.getDate() - now.getDay()));
+      const lastDay = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+      return d >= firstDay && d <= lastDay;
+    }
+    return true;
+  }
 
-    return Math.round((this.completedTasksCount / total) * 100);
+  filteredTasks = computed(() => {
+    const view = this.dashboardView();
+    return this.tasks().filter(t => this.isDateInView(t.dueDate || t.createdAt, view));
+  });
+
+  filteredRecipes = computed(() => {
+    const view = this.dashboardView();
+    return this.recipes().filter(r => this.isDateInView(r.createdAt, view));
+  });
+
+  // Separate metrics
+  get remainingTasksCount(): number {
+    return this.filteredTasks().filter(t => !t.done).length;
   }
 
   get remainingRecipesCount(): number {
-    return this.recipes().filter(r => !r.completed).length;
+    return this.filteredRecipes().filter(r => !r.completed).length;
   }
 
-  get completedRecipesCount(): number {
-    return this.recipes().filter(r => r.completed).length;
+  get estimatedTasksMinutes(): number {
+    return this.filteredTasks().filter(t => !t.done).reduce((acc, t) => acc + t.estimatedMinutes, 0);
   }
 
-  get recipeCompletionPercent(): number {
-    const total = this.recipes().length;
-    if (!total) {
-      return 0;
+  get estimatedRecipesMinutes(): number {
+    return this.filteredRecipes().filter(r => !r.completed).reduce((acc, r) => acc + r.cookTime, 0);
+  }
+
+  get tasksCompletionPercent(): number {
+    const total = this.filteredTasks().length;
+    if (total === 0) return 0;
+    const done = this.filteredTasks().filter(t => t.done).length;
+    return Math.round((done / total) * 100);
+  }
+
+  get recipesCompletionPercent(): number {
+    const total = this.filteredRecipes().length;
+    if (total === 0) return 0;
+    const done = this.filteredRecipes().filter(r => r.completed).length;
+    return Math.round((done / total) * 100);
+  }
+
+  // Calendar Heatmap (For Year View)
+  calendarOptions = computed<EChartsOption>(() => {
+    const dataMap = new Map<string, number>();
+    for (const t of this.tasks()) {
+        const d = new Date(t.dueDate || t.createdAt);
+        const dateStr = d.toISOString().split('T')[0];
+        dataMap.set(dateStr, (dataMap.get(dateStr) || 0) + 1);
     }
+    const data = Array.from(dataMap.entries());
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    
+    return {
+        tooltip: { 
+            position: 'top',
+            formatter: function (p: any) {
+                const date = p.data[0];
+                const count = p.data[1];
+                return `<span style="font-weight:bold">${date}</span><br/>Tasks: ${count}`;
+            }
+        },
+        visualMap: {
+            min: 0,
+            max: 5,
+            calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: 0,
+            inRange: { color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127'] },
+            textStyle: { color: '#ccc' }
+        },
+        calendar: {
+            top: 20,
+            left: 30,
+            right: 30,
+            bottom: 60,
+            range: now.getFullYear().toString(),
+            cellSize: ['auto', 16],
+            itemStyle: { borderWidth: 0.5, borderColor: '#333' },
+            splitLine: {
+                show: true,
+                lineStyle: {
+                    color: '#888',
+                    width: 2,
+                    type: 'solid'
+                }
+            },
+            yearLabel: { show: false },
+            dayLabel: { color: '#ccc' },
+            monthLabel: { color: '#ccc' }
+        },
+        series: [
+            {
+                type: 'heatmap',
+                coordinateSystem: 'calendar',
+                data: data
+            },
+            {
+                type: 'effectScatter',
+                coordinateSystem: 'calendar',
+                symbolSize: 14,
+                rippleEffect: {
+                    brushType: 'stroke',
+                    scale: 3
+                },
+                itemStyle: { 
+                    color: '#ff0000ff', // Bright amber/gold
+                    shadowBlur: 10,
+                    shadowColor: '#ff0000ff'
+                },
+                data: [[todayStr, dataMap.get(todayStr) || 0]],
+                tooltip: {
+                    formatter: function() {
+                        return `<span style="font-weight:bold">${todayStr} (Today)</span>`;
+                    }
+                }
+            }
+        ]
+    };
+  });
 
-    return Math.round((this.completedRecipesCount / total) * 100);
-  }
+  // Bar Chart (For All Time View)
+  allTimeChartOptions = computed<EChartsOption>(() => {
+    const dataMap = new Map<string, number>();
+    for (const t of this.tasks()) {
+        const d = new Date(t.dueDate || t.createdAt);
+        const year = d.getFullYear().toString();
+        dataMap.set(year, (dataMap.get(year) || 0) + 1);
+    }
+    const years = Array.from(dataMap.keys()).sort();
+    const data = years.map(y => dataMap.get(y) || 0);
 
-  get totalRemainingCookMinutes(): number {
-    return this.recipes()
-      .filter(r => !r.completed)
-      .reduce((sum, r) => sum + r.cookTime, 0);
-  }
+    return {
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: years, axisLabel: { color: '#ccc' } },
+        yAxis: { type: 'value', axisLabel: { color: '#ccc' } },
+        series: [{
+            name: 'Tasks Added',
+            type: 'bar',
+            data: data,
+            itemStyle: { color: '#7bc96f', borderRadius: [4, 4, 0, 0] }
+        }]
+    };
+  });
 
-  get uniqueTopics(): string[] {
-    const topics = this.tasks()
-      .map(t => t.topic.trim())
-      .filter(Boolean);
+  // Chart 1: Completed vs Overdue
+  completedVsOverdueOptions = computed<EChartsOption>(() => {
+      const dates = new Set<string>();
+      const completedMap = new Map<string, number>();
+      const overdueMap = new Map<string, number>();
+      const now = new Date();
 
-    return [...new Set(topics)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-  }
+      const tasks = this.dashboardView() === 'all' ? this.tasks() : this.filteredTasks();
 
-  get recipeTags(): string[] {
-    const tags = this.recipes()
-      .map(r => r.tag.trim())
-      .filter(Boolean);
-
-    return [...new Set(tags)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-  }
-
-  get topTopics(): Array<{ name: string; count: number; width: number }> {
-    const counter = new Map<string, number>();
-
-    for (const task of this.tasks()) {
-      const name = task.topic.trim();
-      if (!name) {
-        continue;
+      for (const t of tasks) {
+          const dStr = new Date(t.dueDate || t.createdAt).toISOString().split('T')[0];
+          dates.add(dStr);
+          if (t.done) {
+              completedMap.set(dStr, (completedMap.get(dStr) || 0) + 1);
+          } else if (t.dueDate && new Date(t.dueDate) < now) {
+              overdueMap.set(dStr, (overdueMap.get(dStr) || 0) + 1);
+          }
       }
-      counter.set(name, (counter.get(name) ?? 0) + 1);
-    }
 
-    const values = Array.from(counter.entries()).map(([name, count]) => ({ name, count }));
-    const max = values.reduce((current, item) => Math.max(current, item.count), 0);
+      const sortedDates = Array.from(dates).sort();
+      const completedData = sortedDates.map(d => completedMap.get(d) || 0);
+      const overdueData = sortedDates.map(d => overdueMap.get(d) || 0);
 
-    return values
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-      .slice(0, 5)
-      .map(item => ({
-        ...item,
-        width: max > 0 ? Math.round((item.count / max) * 100) : 0
-      }));
-  }
+      return {
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['Completed', 'Overdue'], textStyle: { color: '#ccc' } },
+          xAxis: { type: 'category', data: sortedDates, axisLabel: { color: '#ccc' } },
+          yAxis: { type: 'value', axisLabel: { color: '#ccc' } },
+          series: [
+              { name: 'Completed', type: 'line', data: completedData, smooth: true, itemStyle: { color: '#7bc96f' } },
+              { name: 'Overdue', type: 'line', data: overdueData, smooth: true, itemStyle: { color: '#e55353' } }
+          ]
+      };
+  });
 
-  get topRecipeTags(): Array<{ name: string; count: number; width: number }> {
-    const counter = new Map<string, number>();
+  // Chart 2: Estimated vs Actual
+  estimatedVsActualOptions = computed<EChartsOption>(() => {
+      const dates = new Set<string>();
+      const estimatedMap = new Map<string, number>();
+      const actualMap = new Map<string, number>();
 
-    for (const recipe of this.recipes()) {
-      const name = recipe.tag.trim();
-      if (!name) {
-        continue;
+      const tasks = this.dashboardView() === 'all' ? this.tasks() : this.filteredTasks();
+
+      for (const t of tasks) {
+          const dStr = new Date(t.dueDate || t.createdAt).toISOString().split('T')[0];
+          dates.add(dStr);
+          estimatedMap.set(dStr, (estimatedMap.get(dStr) || 0) + t.estimatedMinutes);
+          actualMap.set(dStr, (actualMap.get(dStr) || 0) + (t.actualMinutes || 0));
       }
-      counter.set(name, (counter.get(name) ?? 0) + 1);
-    }
 
-    const values = Array.from(counter.entries()).map(([name, count]) => ({ name, count }));
-    const max = values.reduce((current, item) => Math.max(current, item.count), 0);
+      const sortedDates = Array.from(dates).sort();
+      const estData = sortedDates.map(d => estimatedMap.get(d) || 0);
+      const actData = sortedDates.map(d => actualMap.get(d) || 0);
 
-    return values
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-      .slice(0, 5)
-      .map(item => ({
-        ...item,
-        width: max > 0 ? Math.round((item.count / max) * 100) : 0
-      }));
-  }
-
-  overdueCount$ = this.clock.time$.pipe(
-    map(now =>
-      this.tasks().filter(t => !t.done && !!t.dueDate && new Date(t.dueDate) < now).length
-    )
-  );
-
+      return {
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['Estimated (min)', 'Actual (min)'], textStyle: { color: '#ccc' } },
+          xAxis: { type: 'category', data: sortedDates, axisLabel: { color: '#ccc' } },
+          yAxis: { type: 'value', axisLabel: { color: '#ccc' } },
+          series: [
+              { name: 'Estimated (min)', type: 'line', data: estData, smooth: true, itemStyle: { color: '#45b6fe' } },
+              { name: 'Actual (min)', type: 'line', data: actData, smooth: true, itemStyle: { color: '#f9ca24' } }
+          ]
+      };
+  });
 }

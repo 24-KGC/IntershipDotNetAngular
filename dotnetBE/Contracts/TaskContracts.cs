@@ -7,6 +7,7 @@ public sealed record CreateTaskRequest(
     DateTimeOffset DueDate,
     int Priority,
     int EstimatedMinutes,
+    int ActualMinutes,
     bool Done,
     string CreatedAt);
 
@@ -16,6 +17,7 @@ public sealed record UpdateTaskRequest(
     string DueDate,
     int Priority,
     int EstimatedMinutes,
+    int ActualMinutes,
     bool Done);
 
 public sealed record TaskResponse(
@@ -25,5 +27,6 @@ public sealed record TaskResponse(
     string DueDate,
     int Priority,
     int EstimatedMinutes,
+    int ActualMinutes,
     bool Done,
     string CreatedAt);

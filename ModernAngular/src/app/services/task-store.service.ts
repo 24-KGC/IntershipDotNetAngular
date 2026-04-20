@@ -9,6 +9,7 @@ export interface TaskNote {
   dueDate: string;
   priority: number;
   estimatedMinutes: number;
+  actualMinutes: number;
   done: boolean;
   createdAt: string; 
 }
@@ -66,6 +67,7 @@ export class TaskStoreService {
       dueDate: updatedTask.dueDate,
       priority: updatedTask.priority,
       estimatedMinutes: updatedTask.estimatedMinutes,
+      actualMinutes: updatedTask.actualMinutes,
       done: updatedTask.done
     };
 

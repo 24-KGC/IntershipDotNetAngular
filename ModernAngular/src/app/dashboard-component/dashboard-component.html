@@ -1,123 +1,165 @@
 <div class="dashboard-shell min-h-screen w-full bg-dark px-6 pb-10 pt-6 md:px-10">
-    <header class="panel-card rounded-3xl p-6">
-        <p class="text-muted text-sm uppercase tracking-[0.18em]">Dashboard</p>
-        <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2 text">
-            <p class="text-[clamp(1.8rem,5vw,3.25rem)] leading-none">{{ time$ | async | date: 'HH:mm:ss' }}</p>
-            <p class="text-[clamp(0.95rem,2vw,1.15rem)] text-muted">{{ time$ | async | date: 'EEEE, MMMM d, y' }}</p>
-        </div>
-        <div class="mt-4 flex flex-wrap gap-3 text-sm text-muted">
-            <p class="stat-chip">Week of year: {{ time$ | async | date: 'w' }}</p>
-            <p class="stat-chip">Week of month: {{ time$ | async | date: 'W' }}</p>
-        </div>
+  <div class="mb-6 flex flex-wrap gap-3 items-center">
+    <span class="text-muted font-bold text-sm uppercase tracking-wider">Time Filter:</span>
+    <button class="btn" [class.sort-active]="dashboardView() === 'all'" (click)="setView('all')">
+      All Time
+    </button>
+    <button class="btn" [class.sort-active]="dashboardView() === 'year'" (click)="setView('year')">
+      Year
+    </button>
+    <button
+      class="btn"
+      [class.sort-active]="dashboardView() === 'month'"
+      (click)="setView('month')"
+    >
+      Month
+    </button>
+    <button class="btn" [class.sort-active]="dashboardView() === 'week'" (click)="setView('week')">
+      Week
+    </button>
+    <button
+      class="btn"
+      [class.sort-active]="dashboardView() === 'today'"
+      (click)="setView('today')"
+    >
+      Today
+    </button>
+  </div>
+
+  <!-- Top split: left clock, right calendar -->
+  <div class="flex flex-col lg:flex-row gap-6">
+    <header
+      class="panel-card rounded-3xl p-6 lg:w-[40%] flex flex-col justify-center min-h-[250px]"
+    >
+      <p class="text-muted text-sm uppercase tracking-[0.18em]">Dashboard</p>
+      <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2 text">
+        <p class="text-[clamp(1.8rem,5vw,3.25rem)] leading-none">
+          {{ time$ | async | date: 'HH:mm:ss' }}
+        </p>
+        <p class="text-[clamp(0.95rem,2vw,1.15rem)] text-muted">
+          {{ time$ | async | date: 'EEEE, MMMM d, y' }}
+        </p>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-3 text-sm text-muted">
+        <p class="stat-chip">Week of year: {{ time$ | async | date: 'w' }}</p>
+        <p class="stat-chip">Week of month: {{ time$ | async | date: 'W' }}</p>
+      </div>
     </header>
 
-    <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article class="metric-card">
-            <p class="metric-label">Tasks Remaining</p>
-            <p class="metric-value">{{ remainingTasksCount }}</p>
-            <p class="metric-sub">Overdue: {{ (overdueCount$ | async) ?? 0 }}</p>
-        </article>
-        <article class="metric-card">
-            <p class="metric-label">Task Estimate</p>
-            <p class="metric-value">{{ Math.floor(totalEstimatedMinutes / 60) }}h {{ totalEstimatedMinutes % 60 }}m</p>
-            <p class="metric-sub">For all in-progress tasks</p>
-        </article>
-        <article class="metric-card">
-            <p class="metric-label">Recipes Remaining</p>
-            <p class="metric-value">{{ remainingRecipesCount }}</p>
-            <p class="metric-sub">Completed: {{ completedRecipesCount }}</p>
-        </article>
-        <article class="metric-card">
-            <p class="metric-label">Cook Estimate</p>
-            <p class="metric-value">{{ Math.floor(totalRemainingCookMinutes / 60) }}h {{ totalRemainingCookMinutes % 60 }}m</p>
-            <p class="metric-sub">For all in-progress recipes</p>
-        </article>
-    </section>
+    <div class="panel-card rounded-3xl p-6 lg:w-[60%] overflow-hidden flex flex-col min-h-[300px]">
+      <p class="panel-title mb-2">
+        {{
+          dashboardView() === 'year'
+            ? 'Task Activity Heatmap'
+            : dashboardView() === 'all'
+              ? 'Tasks per Year'
+              : 'Agenda (' + (dashboardView() | titlecase) + ')'
+        }}
+      </p>
 
-    <section class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <article class="panel-card">
-            <div class="mb-3 flex items-center justify-between">
-                <p class="panel-title">Task Progress</p>
-                <p class="panel-accent">{{ taskCompletionPercent }}%</p>
+      @if (dashboardView() === 'year') {
+        <div echarts [options]="calendarOptions()" class="w-full h-full min-h-[200px]"></div>
+      } @else if (dashboardView() === 'all') {
+        <div echarts [options]="allTimeChartOptions()" class="w-full h-full min-h-[200px]"></div>
+      } @else {
+        <div class="flex-1 overflow-y-auto pr-2 mt-2 space-y-3 max-h-[220px] custom-scrollbar">
+          @for (task of filteredTasks(); track task.id) {
+            <div
+              class="text p-3 bg-dark rounded-xl border border-muted flex justify-between items-center"
+            >
+              <div>
+                <p class="font-bold text-sm text-text">{{ task.title }}</p>
+                <p class="text-xs text-muted mt-1">{{ task.dueDate | date: 'mediumDate' }}</p>
+              </div>
+              <div
+                class="px-2 py-1 text-xs font-bold rounded-lg"
+                [class.bg-info]="!task.done"
+                [class.bg-success]="task.done"
+                [class.text-white]="true"
+              >
+                {{ task.done ? 'Done' : 'Pending' }}
+              </div>
             </div>
-            <div class="progress-track">
-                <div class="progress-fill progress-task" [style.width.%]="taskCompletionPercent"></div>
-            </div>
-            <div class="mt-3 flex justify-between text-sm text-muted">
-                <p>Done: {{ completedTasksCount }}</p>
-                <p>Total: {{ tasks().length }}</p>
-            </div>
-
-            <div class="mt-5">
-                <p class="panel-subtitle">Top Topics</p>
-                @if (topTopics.length === 0) {
-                    <p class="empty-state">No topics yet.</p>
-                } @else {
-                    <div class="mt-2 space-y-2">
-                        @for (topic of topTopics; track topic.name) {
-                            <div>
-                                <div class="mb-1 flex justify-between text-sm text-muted">
-                                    <p>{{ topic.name }}</p>
-                                    <p>{{ topic.count }}</p>
-                                </div>
-                                <div class="mini-track">
-                                    <div class="mini-fill mini-fill-task" [style.width.%]="topic.width"></div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        </article>
-
-        <article class="panel-card">
-            <div class="mb-3 flex items-center justify-between">
-                <p class="panel-title">Recipe Progress</p>
-                <p class="panel-accent">{{ recipeCompletionPercent }}%</p>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill progress-recipe" [style.width.%]="recipeCompletionPercent"></div>
-            </div>
-            <div class="mt-3 flex justify-between text-sm text-muted">
-                <p>Done: {{ completedRecipesCount }}</p>
-                <p>Total: {{ recipes().length }}</p>
-            </div>
-
-            <div class="mt-5">
-                <p class="panel-subtitle">Top Tags</p>
-                @if (topRecipeTags.length === 0) {
-                    <p class="empty-state">No tags yet.</p>
-                } @else {
-                    <div class="mt-2 space-y-2">
-                        @for (tag of topRecipeTags; track tag.name) {
-                            <div>
-                                <div class="mb-1 flex justify-between text-sm text-muted">
-                                    <p>{{ tag.name }}</p>
-                                    <p>{{ tag.count }}</p>
-                                </div>
-                                <div class="mini-track">
-                                    <div class="mini-fill mini-fill-recipe" [style.width.%]="tag.width"></div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        </article>
-    </section>
-
-    <section class="mt-6 panel-card">
-        <p class="panel-title mb-3">Quick Tags and Topics</p>
-        <div class="flex flex-wrap gap-2">
-            @if (uniqueTopics.length === 0 && recipeTags.length === 0) {
-                <p class="empty-state">No topics or tags yet.</p>
-            }
-            @for (topic of uniqueTopics; track topic) {
-                <span class="pill topic-pill">{{ topic }}</span>
-            }
-            @for (tag of recipeTags; track tag) {
-                <span class="pill tag-pill">{{ tag }}</span>
-            }
+          } @empty {
+            <p class="text-muted text-sm mt-4 italic">No tasks scheduled for this period.</p>
+          }
         </div>
-    </section>
+      }
+    </div>
+  </div>
+
+  <!-- Metrics section -->
+  <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <article class="metric-card flex flex-col justify-center">
+      <p class="metric-label">Items Remaining</p>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <p class="metric-value">{{ remainingTasksCount }}</p>
+          <p class="metric-sub">Tasks</p>
+        </div>
+        <div class="h-10 w-px bg-slate-700"></div>
+        <div class="text-right">
+          <p class="metric-value">{{ remainingRecipesCount }}</p>
+          <p class="metric-sub">Recipes</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="metric-card flex flex-col justify-center">
+      <p class="metric-label">Total Estimate (In-Progress)</p>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <p class="metric-value">
+            {{ Math.floor(estimatedTasksMinutes / 60) }}h {{ estimatedTasksMinutes % 60 }}m
+          </p>
+          <p class="metric-sub">Tasks</p>
+        </div>
+        <div class="h-10 w-px bg-slate-700"></div>
+        <div class="text-right">
+          <p class="metric-value">
+            {{ Math.floor(estimatedRecipesMinutes / 60) }}h {{ estimatedRecipesMinutes % 60 }}m
+          </p>
+          <p class="metric-sub">Recipes</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- Progress section -->
+  <section class="mt-6 panel-card grid grid-cols-1 gap-6 md:grid-cols-2">
+    <!-- Tasks Progress -->
+    <div>
+      <div class="mb-2 flex items-center justify-between">
+        <p class="panel-title text-sm">Tasks Progress ({{ dashboardView() | titlecase }})</p>
+        <p class="panel-accent text-info">{{ tasksCompletionPercent }}%</p>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill bg-info" [style.width.%]="tasksCompletionPercent"></div>
+      </div>
+    </div>
+
+    <!-- Recipes Progress -->
+    <div>
+      <div class="mb-2 flex items-center justify-between">
+        <p class="panel-title text-sm">Recipes Progress ({{ dashboardView() | titlecase }})</p>
+        <p class="panel-accent text-success">{{ recipesCompletionPercent }}%</p>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill bg-success" [style.width.%]="recipesCompletionPercent"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Line Charts -->
+  <section class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+    <article class="panel-card min-h-[300px]">
+      <p class="panel-title mb-4">Completed vs Overdue Tasks</p>
+      <div echarts [options]="completedVsOverdueOptions()" class="w-full h-[300px]"></div>
+    </article>
+
+    <article class="panel-card min-h-[300px]">
+      <p class="panel-title mb-4">Estimated vs Actual Time (Tasks)</p>
+      <div echarts [options]="estimatedVsActualOptions()" class="w-full h-[300px]"></div>
+    </article>
+  </section>
 </div>

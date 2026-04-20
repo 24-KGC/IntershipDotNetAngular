@@ -15,7 +15,8 @@
 	border: 1px solid var(--border-muted);
 	background: var(--bg);
 	border-radius: 1rem;
-	padding: 1rem;
+	padding: 1.25rem;
+    box-shadow: 0 4px 6px color-mix(in oklch, var(--bg-dark) 40%, transparent);
 }
 
 .metric-label {
@@ -28,7 +29,7 @@
 .metric-value {
 	margin-top: 0.45rem;
 	color: var(--text);
-	font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+	font-size: clamp(1.5rem, 3vw, 2rem);
 	font-weight: 700;
 	line-height: 1.1;
 }
@@ -41,73 +42,67 @@
 
 .panel-title {
 	color: var(--text);
-	font-size: 1.05rem;
+	font-size: 1.15rem;
 	font-weight: 700;
-}
-
-.panel-subtitle {
-	color: var(--text);
-	font-size: 0.9rem;
-	font-weight: 600;
 }
 
 .panel-accent {
 	color: var(--success);
 	font-weight: 700;
+    font-size: 1.1rem;
 }
 
-.progress-track,
-.mini-track {
+.progress-track {
 	width: 100%;
 	border-radius: 999px;
 	background: var(--border-muted);
 	overflow: hidden;
+	height: 1.2rem;
 }
 
-.progress-track {
-	height: 0.8rem;
-}
-
-.mini-track {
-	height: 0.5rem;
-}
-
-.progress-fill,
-.mini-fill {
+.progress-fill {
 	height: 100%;
 	transition: width 350ms ease;
 }
 
-.progress-task,
-.mini-fill-task {
-	background: var(--info);
+.bg-info { background: var(--info); }
+.bg-success { background: var(--success); }
+.text-info { color: var(--info); }
+.text-success { color: var(--success); }
+
+.btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--highlight) 40%, transparent);
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--secondary), color-mix(in oklch, var(--secondary) 85%, black));
+  
+  box-shadow: 0 4px 6px color-mix(in oklch, var(--bg-dark) 50%, transparent);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.progress-recipe,
-.mini-fill-recipe {
-	background: var(--success);
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 85%, black));
+  box-shadow: 0 6px 14px color-mix(in oklch, var(--primary) 30%, transparent);
+  border-color: var(--highlight);
 }
 
-.pill {
-	border-radius: 999px;
-	padding: 0.3rem 0.7rem;
-	font-size: 0.82rem;
-	border: 1px solid transparent;
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px color-mix(in oklch, var(--bg-dark) 50%, transparent);
 }
 
-.topic-pill {
-	background: var(--bg-light);
-	border-color: var(--info);
-	color: var(--info);
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(80%);
 }
 
-.tag-pill {
-	background: var(--bg-light);
-	border-color: var(--success);
-	color: var(--success);
-}
-
-.empty-state {
-	color: var(--text-muted);
-	font-size: 0.9rem;
+.btn.sort-active {
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 85%, black));
+  border-color: var(--highlight);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 40%, transparent);
 }

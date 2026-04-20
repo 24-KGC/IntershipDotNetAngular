@@ -25,6 +25,8 @@ public sealed class TaskItem
     [Range(1, int.MaxValue)]
     public int EstimatedMinutes { get; set; }
 
+    public int ActualMinutes { get; set; }
+
     public bool Done { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
