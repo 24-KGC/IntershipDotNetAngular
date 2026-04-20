@@ -22,6 +22,8 @@ public sealed class RecipeItem
     [MaxLength(120)]
     public string Tag { get; set; } = string.Empty;
 
+    public string Description { get; set; } = string.Empty;
+
     [Range(1, 5)]
     public int Priority { get; set; }
 

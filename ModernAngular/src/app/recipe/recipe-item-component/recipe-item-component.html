@@ -1,53 +1,43 @@
-<li class="app-recipe-item-component text-muted min-h-1/10 w-full bg p-3 rounded-4xl app-recipe-item-component flex flex-row" [class.border-success]="recipe.completed">
-	@if (error) {
-		<p class="text-red-700 ml-10">{{ error }}</p>
-	}
-	@if (loading) {
-		<p class="text-muted ml-10">Working...</p>
-	}
-	<div class="flex flex-col shrink-0">
-		<div class="flex flex-row items-start gap-3">
-			@if (recipe.imageUrl) {
-				<img
-					class="recipe-thumb shrink-0 rounded-3xl object-cover"
-					[src]="recipe.imageUrl"
-					alt="Recipe image"
-				/>
-			} @else {
-				<div class="recipe-thumb shrink-0 rounded-3xl flex items-center justify-center border border-muted">
-					<p class="text-muted text-sm">No image</p>
-				</div>
-			}
-
-			<div>
-				<p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
-					{{ index + 1 }}. {{ recipe.title }}
-				</p>
-				@if (!collapsed) {
-					<div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-1 flex-wrap">
-						<p>Tag: {{ recipe.tag }}.</p>
-						<p>Priority: {{ recipe.priority }}.</p>
-						<p>Cook: {{ recipe.cookTime }} min.</p>
-						<p>Steps: {{ recipe.numSteps }}.</p>
-					</div>
-				}
-                @if (!collapsed) {
-                    <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 mt-2">
-                        <p>Ingredient[{{ getIngredientList().length }}]: {{ getIngredientPreview() }}</p>
-                    </div>
-                }
-			</div>
-		</div>
-
-	</div>
-    @if (!collapsed) {
-		<div class="flex-1 min-w-0 flex items-center justify-end gap-3">
-        <div class="flex flex-col justify-center">
-            <p class="text-[clamp(0.5rem,1vw,1rem)] mb-3">Completed</p>
-			<input class="recipe-checkbox ml-3" type="checkbox" [checked]="recipe.completed" (change)="toggleCompleted(recipe)" />
+<li class="app-recipe-item-component text-muted min-h-1/10 w-full bg p-4 rounded-4xl flex flex-row" [class.border-success]="recipe.completed">
+  <div class="flex flex-col shrink-0">
+    <div class="flex flex-row items-start gap-3">
+      @if (recipe.imageUrl) {
+        <img
+          class="recipe-thumb shrink-0 rounded-3xl object-cover"
+          [src]="recipe.imageUrl"
+          alt="Recipe image"
+        />
+      } @else {
+        <div class="recipe-thumb shrink-0 rounded-3xl flex items-center justify-center border border-muted">
+          <p class="text-muted text-sm">No image</p>
         </div>
-		<button class="btn ml-4" type="button" (click)="editRecipe(recipe)">Edit</button>
-		<button class="btn ml-4" type="button" (click)="removeRecipe(recipe)">Delete</button>
-        </div>
-    }
+      }
+
+      <div>
+        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
+          {{ index + 1 }}. {{ recipe.title }}
+        </p>
+        @if (!collapsed) {
+          <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-2 flex-wrap mt-1">
+            <p>Priority: {{ recipe.priority }}.</p>
+            <p>Cook: {{ recipe.cookTime }} min.</p>
+            <p>Steps: {{ recipe.numSteps }}.</p>
+          </div>
+          <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 mt-1">
+            <p>Ingredients[{{ getIngredientList().length }}]: {{ getIngredientPreview() }}</p>
+          </div>
+          @if (recipe.description) {
+            <p class="description-text pl-1">{{ recipe.description }}</p>
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (!collapsed) {
+    <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
+      <button class="btn" type="button" (click)="editRecipe(recipe)">Edit</button>
+      <button class="btn" type="button" (click)="removeRecipe(recipe)">Delete</button>
+    </div>
+  }
 </li>

@@ -5,7 +5,7 @@ import { RecipeItemComponent } from '../recipe-item-component/recipe-item-compon
 import { ClockService } from '../../services/clock.service';
 import { DatePipe, AsyncPipe } from '@angular/common';
 
-type RecipeSortField = 'id' | 'title' | 'tag' | 'priority' | 'cookTime' | 'numIngredients' | 'numSteps';
+type RecipeSortField = 'tag' | 'priority' | 'cookTime' | 'numIngredients' | 'numSteps';
 
 @Component({
   selector: 'app-recipes-page-component',
@@ -15,9 +15,9 @@ type RecipeSortField = 'id' | 'title' | 'tag' | 'priority' | 'cookTime' | 'numIn
   styleUrl: './recipes-page-component.css',
 })
 export class RecipesPageComponent implements OnInit {
-  Math = Math; // for template
-  clock = inject(ClockService);          
-  time$ = this.clock.time$;              
+  Math = Math;
+  clock = inject(ClockService);
+  time$ = this.clock.time$;
 
   private readonly fb = inject(FormBuilder);
   private readonly store = inject(RecipeStoreService);
@@ -38,6 +38,7 @@ export class RecipesPageComponent implements OnInit {
     title: ['', [Validators.required]],
     ingredients: ['', [Validators.required]],
     tag: ['', [Validators.required]],
+    description: [''],
     priority: [1, [Validators.min(1), Validators.max(5)]],
     cookTime: [1, [Validators.min(1)]],
     numSteps: [1, [Validators.min(1)]],
@@ -52,28 +53,19 @@ export class RecipesPageComponent implements OnInit {
       ? source.filter((recipe) => {
           return (
             recipe.title.toLowerCase().includes(query) ||
-            recipe.id.toLowerCase().includes(query) ||
             recipe.tag.toLowerCase().includes(query) ||
-            recipe.ingredients.toLowerCase().includes(query)
+            recipe.ingredients.toLowerCase().includes(query) ||
+            recipe.description.toLowerCase().includes(query)
           );
         })
       : source;
 
     const field = this.currentSortField();
-    if (!field) {
-      return filtered;
-    }
+    if (!field) return filtered;
 
-    const sorted = [...filtered].sort((left, right) => {
+    return [...filtered].sort((left, right) => {
       let result = 0;
-
       switch (field) {
-        case 'id':
-          result = left.id.localeCompare(right.id, undefined, { sensitivity: 'base' });
-          break;
-        case 'title':
-          result = left.title.localeCompare(right.title, undefined, { sensitivity: 'base' });
-          break;
         case 'tag':
           result = left.tag.localeCompare(right.tag, undefined, { sensitivity: 'base' });
           break;
@@ -90,16 +82,22 @@ export class RecipesPageComponent implements OnInit {
           result = left.numSteps - right.numSteps;
           break;
       }
-
       return this.ascending() ? result : -result;
     });
-
-    return sorted;
   });
 
+  /** Returns all unique tags, sorted alphabetically. */
+  readonly tags = computed(() => {
+    const all = [...new Set(this.filteredRecipes().map(r => r.tag))];
+    return all.sort((a, b) => a.localeCompare(b));
+  });
+
+  /** Returns the recipes for a specific tag. */
+  recipesForTag(tag: string): RecipeRecord[] {
+    return this.filteredRecipes().filter(r => r.tag === tag);
+  }
+
   readonly sortFields: Array<{ field: RecipeSortField; label: string }> = [
-    { field: 'id', label: 'ID' },
-    { field: 'title', label: 'Title' },
     { field: 'tag', label: 'Tag' },
     { field: 'priority', label: 'Priority' },
     { field: 'cookTime', label: 'Cook time' },
@@ -109,18 +107,8 @@ export class RecipesPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.loadRecipes().subscribe({
-      error: () => {
-        // Error state is handled by the store.
-      }
+      error: () => {}
     });
-  }
-
-  get inProgressRecipes(): RecipeRecord[] {
-    return this.filteredRecipes().filter((recipe) => !recipe.completed);
-  }
-
-  get completedRecipes(): RecipeRecord[] {
-    return this.filteredRecipes().filter((recipe) => recipe.completed);
   }
 
   setSearchQuery(value: string): void {
@@ -136,10 +124,7 @@ export class RecipesPageComponent implements OnInit {
   }
 
   getSortArrow(field: RecipeSortField): string {
-    if (this.currentSortField() !== field) {
-      return '';
-    }
-
+    if (this.currentSortField() !== field) return '';
     return this.ascending() ? '↑' : '↓';
   }
 
@@ -148,7 +133,6 @@ export class RecipesPageComponent implements OnInit {
       this.ascending.update((value) => !value);
       return;
     }
-
     this.currentSortField.set(field);
     this.ascending.set(true);
   }
@@ -164,6 +148,7 @@ export class RecipesPageComponent implements OnInit {
       title: value.title.trim(),
       ingredients: value.ingredients.trim(),
       tag: value.tag.trim(),
+      description: value.description.trim(),
       priority: value.priority,
       cookTime: value.cookTime,
       numSteps: value.numSteps,
@@ -181,17 +166,13 @@ export class RecipesPageComponent implements OnInit {
       };
 
       this.store.updateRecipe(recipe).subscribe({
-        next: () => {
-          this.cancelEdit();
-        }
+        next: () => { this.cancelEdit(); }
       });
       return;
     }
 
     this.store.addRecipe(recipeBase).subscribe({
-      next: () => {
-        this.resetForm();
-      }
+      next: () => { this.resetForm(); }
     });
   }
 
@@ -201,6 +182,7 @@ export class RecipesPageComponent implements OnInit {
       title: recipe.title,
       ingredients: recipe.ingredients,
       tag: recipe.tag,
+      description: recipe.description,
       priority: recipe.priority,
       cookTime: recipe.cookTime,
       numSteps: recipe.numSteps,
@@ -226,11 +208,7 @@ export class RecipesPageComponent implements OnInit {
   handleImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       this.form.patchValue({ imageUrl: String(reader.result ?? '') });
@@ -257,6 +235,7 @@ export class RecipesPageComponent implements OnInit {
       title: '',
       ingredients: '',
       tag: '',
+      description: '',
       priority: 1,
       cookTime: 1,
       numSteps: 1,
@@ -276,12 +255,7 @@ export class RecipesPageComponent implements OnInit {
   getIngredientPreview(recipe: RecipeRecord, limit = 2): string {
     const ingredients = this.getIngredientList(recipe);
     const preview = ingredients.slice(0, limit).join(', ');
-
-    if (ingredients.length <= limit) {
-      return preview;
-    }
-
+    if (ingredients.length <= limit) return preview;
     return `${preview}, ...`;
   }
-
 }

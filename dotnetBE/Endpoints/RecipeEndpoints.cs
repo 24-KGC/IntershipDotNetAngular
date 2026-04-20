@@ -58,6 +58,7 @@ public static class RecipeEndpoints
             Title = request.Title.Trim(),
             Ingredients = request.Ingredients.Trim(),
             Tag = request.Tag.Trim(),
+            Description = request.Description?.Trim() ?? string.Empty,
             Priority = request.Priority,
             CookTime = request.CookTime,
             NumSteps = request.NumSteps,
@@ -108,6 +109,7 @@ public static class RecipeEndpoints
         entity.Title = request.Title.Trim();
         entity.Ingredients = request.Ingredients.Trim();
         entity.Tag = request.Tag.Trim();
+        entity.Description = request.Description?.Trim() ?? string.Empty;
         entity.Priority = request.Priority;
         entity.CookTime = request.CookTime;
         entity.NumSteps = request.NumSteps;
@@ -187,6 +189,7 @@ public static class RecipeEndpoints
             recipe.Ingredients,
             CountIngredients(recipe.Ingredients),
             recipe.Tag,
+            recipe.Description,
             recipe.Priority,
             recipe.CookTime,
             recipe.NumSteps,

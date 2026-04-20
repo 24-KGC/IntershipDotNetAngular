@@ -9,6 +9,7 @@ export interface RecipeRecord {
   ingredients: string;
   numIngredients: number;
   tag: string;
+  description: string;
   priority: number;
   cookTime: number;
   numSteps: number;
@@ -21,6 +22,7 @@ export interface CreateRecipeRequest {
   title: string;
   ingredients: string;
   tag: string;
+  description: string;
   priority: number;
   cookTime: number;
   numSteps: number;
@@ -79,6 +81,7 @@ export class RecipeStoreService {
       title: updatedRecipe.title,
       ingredients: updatedRecipe.ingredients,
       tag: updatedRecipe.tag,
+      description: updatedRecipe.description,
       priority: updatedRecipe.priority,
       cookTime: updatedRecipe.cookTime,
       numSteps: updatedRecipe.numSteps,

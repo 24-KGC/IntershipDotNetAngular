@@ -1,134 +1,164 @@
 <div class="recipe-page-shell min-h-screen w-[full] bg-dark">
-    <div class="flex flex-col gap-6 px-10 pt-5 lg:flex-row lg:items-start lg:justify-between">
-        <div class="recipe-top-panel text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted flex w-full flex-col gap-4 lg:w-[30%]">
-            <div class="flex flex-row gap-1">
-                <p> {{ time$ | async | date: 'HH:mm:ss' }}, </p>
-                <p> {{ time$ | async | date: 'EEEE, MMMM d, y' }}. </p>
-            </div>
-            <div class="flex flex-col">
-                <p>{{ filteredRecipes().length }} recipes total.</p>
-                <p>{{ inProgressRecipes.length }} in progress, {{ completedRecipes.length }} completed.</p>
-            </div>
-        </div>
-
-        <div class="recipe-toolbar w-full lg:w-[65%]">
-    			<div class="flex flex-row flex-wrap gap-3">
-				<button class="btn" [class.sort-active]="isSortActive('id')" type="button" (click)="sortBy('id')">
-					ID <span class="sort-arrow">{{ getSortArrow('id') }}</span>
-				</button>
-                <button class="btn" [class.sort-active]="isSortActive('title')" type="button" (click)="sortBy('title')">
-                    Title <span class="sort-arrow">{{ getSortArrow('title') }}</span>
-                </button>
-				<button class="btn" [class.sort-active]="isSortActive('tag')" type="button" (click)="sortBy('tag')">
-					Tag <span class="sort-arrow">{{ getSortArrow('tag') }}</span>
-				</button>
-				<button class="btn" [class.sort-active]="isSortActive('priority')" type="button" (click)="sortBy('priority')">
-					Priority <span class="sort-arrow">{{ getSortArrow('priority') }}</span>
-				</button>
-				<button class="btn" [class.sort-active]="isSortActive('cookTime')" type="button" (click)="sortBy('cookTime')">
-					Cook Time <span class="sort-arrow">{{ getSortArrow('cookTime') }}</span>
-				</button>
-				<button class="btn" [class.sort-active]="isSortActive('numIngredients')" type="button" (click)="sortBy('numIngredients')">
-					Num Ingredients <span class="sort-arrow">{{ getSortArrow('numIngredients') }}</span>
-				</button>
-				<button class="btn" [class.sort-active]="isSortActive('numSteps')" type="button" (click)="sortBy('numSteps')">
-					Num Steps <span class="sort-arrow">{{ getSortArrow('numSteps') }}</span>
-				</button>
-				<button class="btn ml-8" type="button" (click)="toggleCollapsed()">
-					{{ collapsed() ? 'List' : 'Collapse' }}
-				</button>
-			</div>
-
-			<div class="mt-3 w-full">
-				<input
-                    class="recipe-search w-full border rounded px-3 py-2 text-muted bg-transparent"
-					type="search"
-                    placeholder="Search by title, tag, or ingredients"
-					[value]="searchQuery()"
-					(input)="setSearchQuery($any($event.target).value)"
-				/>
-			</div>
-        </div>
+  <div class="flex flex-col gap-6 px-10 pt-5 lg:flex-row lg:items-start lg:justify-between">
+    <div
+      class="recipe-top-panel text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted flex w-full flex-col gap-4 lg:w-[30%]"
+    >
+      <div class="flex flex-row gap-1">
+        <p>{{ time$ | async | date: 'HH:mm:ss' }},</p>
+        <p>{{ time$ | async | date: 'EEEE, MMMM d, y' }}.</p>
+      </div>
+      <div class="flex flex-col">
+        <p>{{ filteredRecipes().length }} recipes total.</p>
+      </div>
     </div>
-    <form #recipeEditFormAnchor [formGroup]="form" (ngSubmit)="submit()">
-        <li class="text-muted mx-10 mt-4 min-h-1/10 bg p-3 rounded-4xl app-recipe-item-component flex flex-row">
-            <div class="flex flex-col shrink-0 w-full">
-                <p class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1">
-                    @if (editingId()) {
-                        Edit recipe:
-                    } @else {
-                        New recipe:
-                    }
-                    <input class="border rounded-l pl-1" formControlName="title" placeholder="Title" />
-                </p>
-                <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-3 mt-2 flex-wrap">
-                    <input class="border rounded-l pl-1" formControlName="ingredients" placeholder="Ingredients" />
-                    <input class="border rounded-l pl-1" formControlName="tag" placeholder="Tag" />
-                    <label>
-                        Priority (1-5):
-                        <input class="border rounded-l pl-1" type="number" min="1" max="5" formControlName="priority" />
-                    </label>
-                    <label>
-                        Cook time:
-                        <input class="border rounded-l pl-1" type="number" min="1" formControlName="cookTime" />
-                    </label>
-                    <label>
-                        Num steps:
-                        <input class="border rounded-l pl-1" type="number" min="1" formControlName="numSteps" />
-                    </label>
-                </div>
-                <div class="mt-3 flex flex-wrap items-center gap-3">
-                    <input #imageInput class="hidden" type="file" accept="image/*" (change)="handleImageSelected($event)" />
-                    <button class="btn-item" type="button" (click)="imageInput.click()">Upload image</button>
-                    @if (selectedImageName()) {
-                        <p class="text-muted">{{ selectedImageName() }}</p>
-                        <button class="btn-item" type="button" (click)="clearImage()">Clear image</button>
-                    }
-                </div>
-                @if (form.controls.imageUrl.value) {
-                    <div class="mt-3">
-                        <p class="text-muted mb-2">Image preview</p>
-                        <img
-                            class="h-28 w-28 rounded-2xl object-cover border border-muted"
-                            [src]="form.controls.imageUrl.value"
-                            alt="Recipe image preview"
-                        />
-                    </div>
-                }
-            </div>
-            <div class="min-w-0 flex justify-end ">
-                @if (editingId()) {
-                    <button class="btn-item ml-4" type="button" (click)="cancelEdit()">Cancel</button>
-                    <button class="btn-item ml-4" type="submit" [disabled]="loading()">Update recipe</button>
-                } @else {
-                    <button class="btn-item ml-4" type="submit" [disabled]="loading()">Add recipe</button>
-                }
-            </div>
-        </li>
-    </form>
-	<div class="mt-2 px-10">
-		<section>
-			<h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">In Progress</h3>
-			<ul class="space-y-2 my-4">
-				@for (recipe of inProgressRecipes; track recipe.id; let i = $index) {
-					<app-recipe-item-component [recipe]="recipe" [index]="i" [collapsed]="collapsed()" [error]="error()" [loading]="loading()" (edit)="editRecipe($event)" (remove)="removeRecipe($event)"></app-recipe-item-component>
-				}
-			</ul>
-		</section>
 
-		<section class="mt-6">
-			<h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2">Completed</h3>
-			<ul class="space-y-2 mt-2">
-				@for (recipe of completedRecipes; track recipe.id; let i = $index) {
-					<app-recipe-item-component [recipe]="recipe" [index]="i" [collapsed]="collapsed()" [error]="error()" [loading]="loading()" (edit)="editRecipe($event)" (remove)="removeRecipe($event)"></app-recipe-item-component>
-				}
-			</ul>
-		</section>
+    <div class="recipe-toolbar w-full lg:w-[65%]">
+      <div class="flex flex-row flex-wrap gap-3">
+        @for (sf of sortFields; track sf.field) {
+          <button
+            class="btn"
+            [class.sort-active]="isSortActive(sf.field)"
+            type="button"
+            (click)="sortBy(sf.field)"
+          >
+            {{ sf.label }} <span class="sort-arrow">{{ getSortArrow(sf.field) }}</span>
+          </button>
+        }
+        <button class="btn ml-8" type="button" (click)="toggleCollapsed()">
+          {{ collapsed() ? 'List' : 'Collapse' }}
+        </button>
+      </div>
 
-		@if (filteredRecipes().length === 0) {
-			<p class="text-muted">No recipes match your search.</p>
-		}
+      <div class="mt-3 w-full">
+        <input
+          class="recipe-search w-full border rounded px-3 py-2 text-muted bg-transparent"
+          type="search"
+          placeholder="Search by title, tag, ingredients or description"
+          [value]="searchQuery()"
+          (input)="setSearchQuery($any($event.target).value)"
+        />
+      </div>
+    </div>
+  </div>
 
-		
-	</div>
+  <form #recipeEditFormAnchor [formGroup]="form" (ngSubmit)="submit()">
+    <li
+      class="text-muted ml-20 mt-10 min-h-1/10 w-[90%] bg p-4 rounded-4xl app-recipe-form flex flex-row"
+    >
+      <div class="flex flex-col shrink-0 w-full">
+        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
+          @if (editingId()) {
+            Edit recipe:
+          } @else {
+            New recipe:
+          }
+          <input class="border rounded-l pl-1" formControlName="title" placeholder="Title" />
+        </p>
+        <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-2 mt-2 flex-wrap">
+          <input
+            class="border rounded-l pl-1"
+            formControlName="ingredients"
+            placeholder="Ingredients (comma-separated)"
+          />
+          <input
+            class="border rounded-l pl-1"
+            formControlName="tag"
+            placeholder="Tag (e.g. Vietnamese)"
+          />
+          <label>
+            Priority (1-5):
+            <input
+              class="border rounded-l pl-1"
+              type="number"
+              min="1"
+              max="5"
+              formControlName="priority"
+            />
+          </label>
+          <label>
+            Cook time (min):
+            <input class="border rounded-l pl-1" type="number" min="1" formControlName="cookTime" />
+          </label>
+          <label>
+            Num steps:
+            <input class="border rounded-l pl-1" type="number" min="1" formControlName="numSteps" />
+          </label>
+        </div>
+        <div class="mt-3 pl-1">
+          <textarea
+            class="border rounded-lg pl-2 pt-1 w-[80%]"
+            formControlName="description"
+            placeholder="Cooking steps & description (optional)"
+            rows="4"
+          ></textarea>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <input
+            #imageInput
+            class="hidden"
+            type="file"
+            accept="image/*"
+            (change)="handleImageSelected($event)"
+          />
+          <button class="btn-item" type="button" (click)="imageInput.click()">Upload image</button>
+          @if (selectedImageName()) {
+            <p class="text-muted">{{ selectedImageName() }}</p>
+            <button class="btn-item" type="button" (click)="clearImage()">Clear image</button>
+          }
+        </div>
+        @if (form.controls.imageUrl.value) {
+          <div class="mt-3">
+            <p class="text-muted mb-2">Image preview</p>
+            <img
+              class="h-28 w-28 rounded-2xl object-cover border border-muted"
+              [src]="form.controls.imageUrl.value"
+              alt="Recipe image preview"
+            />
+          </div>
+        }
+      </div>
+      <div class="min-w-0 flex justify-end">
+        @if (editingId()) {
+          <button class="btn-item ml-4" type="button" (click)="cancelEdit()">Cancel</button>
+          <button class="btn-item ml-4" type="submit" [disabled]="loading()">Update recipe</button>
+        } @else {
+          <button class="btn-item ml-4" type="submit" [disabled]="loading()">Add recipe</button>
+        }
+      </div>
+    </li>
+  </form>
+
+  @if (error()) {
+    <p class="text-red-700 ml-10 mt-4">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p class="text-muted ml-10 mt-4">Loading...</p>
+  }
+
+  <div class="mt-4 px-10">
+    @if (filteredRecipes().length === 0) {
+      <p class="text-muted">No recipes found.</p>
+    }
+
+    @for (tag of tags(); track tag) {
+      <section class="mt-6">
+        <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2 font-bold tracking-wide">
+          {{ tag }}
+        </h3>
+        <ul class="space-y-2">
+          @for (recipe of recipesForTag(tag); track recipe.id; let i = $index) {
+            <app-recipe-item-component
+              [recipe]="recipe"
+              [index]="i"
+              [collapsed]="collapsed()"
+              [error]="error()"
+              [loading]="loading()"
+              (edit)="editRecipe($event)"
+              (remove)="removeRecipe($event)"
+            />
+          }
+        </ul>
+      </section>
+    }
+  </div>
 </div>

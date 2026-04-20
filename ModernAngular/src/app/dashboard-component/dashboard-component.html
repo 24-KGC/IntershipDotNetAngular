@@ -92,61 +92,32 @@
   <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
     <article class="metric-card flex flex-col justify-center">
       <p class="metric-label">Items Remaining</p>
-      <div class="mt-2 flex items-center justify-between">
-        <div>
-          <p class="metric-value">{{ remainingTasksCount }}</p>
-          <p class="metric-sub">Tasks</p>
-        </div>
-        <div class="h-10 w-px bg-slate-700"></div>
-        <div class="text-right">
-          <p class="metric-value">{{ remainingRecipesCount }}</p>
-          <p class="metric-sub">Recipes</p>
-        </div>
+      <div class="mt-2">
+        <p class="metric-value">{{ remainingTasksCount }}</p>
+        <p class="metric-sub">Tasks</p>
       </div>
     </article>
 
     <article class="metric-card flex flex-col justify-center">
       <p class="metric-label">Total Estimate (In-Progress)</p>
-      <div class="mt-2 flex items-center justify-between">
-        <div>
-          <p class="metric-value">
-            {{ Math.floor(estimatedTasksMinutes / 60) }}h {{ estimatedTasksMinutes % 60 }}m
-          </p>
-          <p class="metric-sub">Tasks</p>
-        </div>
-        <div class="h-10 w-px bg-slate-700"></div>
-        <div class="text-right">
-          <p class="metric-value">
-            {{ Math.floor(estimatedRecipesMinutes / 60) }}h {{ estimatedRecipesMinutes % 60 }}m
-          </p>
-          <p class="metric-sub">Recipes</p>
-        </div>
+      <div class="mt-2">
+        <p class="metric-value">
+          {{ Math.floor(estimatedTasksMinutes / 60) }}h {{ estimatedTasksMinutes % 60 }}m
+        </p>
+        <p class="metric-sub">Tasks</p>
       </div>
     </article>
   </section>
 
   <!-- Progress section -->
-  <section class="mt-6 panel-card grid grid-cols-1 gap-6 md:grid-cols-2">
+  <section class="mt-6 panel-card">
     <!-- Tasks Progress -->
-    <div>
-      <div class="mb-2 flex items-center justify-between">
-        <p class="panel-title text-sm">Tasks Progress ({{ dashboardView() | titlecase }})</p>
-        <p class="panel-accent text-info">{{ tasksCompletionPercent }}%</p>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill bg-info" [style.width.%]="tasksCompletionPercent"></div>
-      </div>
+    <div class="mb-2 flex items-center justify-between">
+      <p class="panel-title text-sm">Tasks Progress ({{ dashboardView() | titlecase }})</p>
+      <p class="panel-accent text-info">{{ tasksCompletionPercent }}%</p>
     </div>
-
-    <!-- Recipes Progress -->
-    <div>
-      <div class="mb-2 flex items-center justify-between">
-        <p class="panel-title text-sm">Recipes Progress ({{ dashboardView() | titlecase }})</p>
-        <p class="panel-accent text-success">{{ recipesCompletionPercent }}%</p>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill bg-success" [style.width.%]="recipesCompletionPercent"></div>
-      </div>
+    <div class="progress-track">
+      <div class="progress-fill bg-info" [style.width.%]="tasksCompletionPercent"></div>
     </div>
   </section>
 
