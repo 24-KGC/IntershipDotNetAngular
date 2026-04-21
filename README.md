@@ -36,6 +36,7 @@ flowchart TB
 
 ## Version
 
+- 0.18: Modern UI, compact form, change dashboard layout.
 - 0.17: Add timer function for tasks, update UI, completed early by feature.
 - 0.16: Add recipe description, update recipe UI, change sorting, change to a cookbook style.
 - 0.15: Refined task item UI, add time spent.

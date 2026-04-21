@@ -14,91 +14,126 @@
   @if (loading()) {
     <p class="text-muted ml-10 mt-4">Working...</p>
   }
-  <form #taskEditFormAnchor [formGroup]="form" (ngSubmit)="submit()">
-    <li
-      class="text-muted ml-20 mt-10 min-h-1/10 w-[90%] bg p-4 rounded-4xl app-task-item-component flex flex-row"
-    >
-      <div class="flex flex-col shrink-0">
-        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
-          @if (editingId()) {
-            Edit:
-          } @else {
-            New:
-          }
-          <input class="border rounded-l pl-1" formControlName="title" placeholder="Title" />
-        </p>
-        <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-3 mt-2">
-          <input
-            class="border rounded-l pl-1"
-            formControlName="topic"
-            placeholder="Topic"
-            list="topics-list"
-          />
-          <datalist id="topics-list">
-            @for (topic of existingTopics; track topic) {
-              <option [value]="topic"></option>
-            }
-          </datalist>
-          <input class="border rounded-l pl-1" type="date" formControlName="dueDate" />
-          <input class="border rounded-l pl-1" type="time" step="1" formControlName="dueTime" />
-          <label>
-            Priority (1-5):
+  @if (!showForm()) {
+    <div class="flex justify-center mt-10">
+      <button
+        class="btn btn-primary-soft px-12 py-4 rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-3 border-2 border-primary/20"
+        (click)="toggleForm()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        <span class="text-lg font-bold text-primary">New Task</span>
+      </button>
+    </div>
+  } @else {
+    <form #taskEditFormAnchor [formGroup]="form" (ngSubmit)="submit()">
+      <li
+        class="text-muted ml-20 mt-10 w-[90%] app-task-item-component p-6 rounded-[2rem] flex flex-row items-center gap-6"
+      >
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="flex items-center gap-4">
+            <span class="text-lg font-bold text-primary">
+              @if (editingId()) {
+                Edit Task
+              } @else {
+                New Task
+              }
+            </span>
             <input
-              class="border rounded-l pl-1"
-              type="number"
-              min="1"
-              max="5"
-              formControlName="priority"
-              placeholder="Priority (1-5)"
+              class="flex-1 text-lg font-semibold"
+              formControlName="title"
+              placeholder="Task Title"
             />
-            @if (form.controls.priority.invalid && form.controls.priority.touched) {
-              <span class="text-red-500 text-xs ml-2">Must be 1-5</span>
-            }
-          </label>
-          <label>
-            Estimated Minutes:
-            <input
-              class="border rounded-l pl-1"
-              type="number"
-              min="1"
-              formControlName="estimatedMinutes"
-              placeholder="Est. Mins"
-            />
-          </label>
+          </div>
+
+          <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex items-center gap-2">
+              <input formControlName="topic" placeholder="Topic" list="topics-list" class="w-32" />
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input type="date" formControlName="dueDate" />
+              <input type="time" step="1" formControlName="dueTime" class="w-28" />
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                max="5"
+                formControlName="priority"
+                placeholder="Prio"
+                class="w-16"
+              />
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                formControlName="estimatedMinutes"
+                placeholder="Mins"
+                class="w-16"
+              />
+            </div>
+          </div>
+
+
         </div>
-      </div>
-      <div class="flex-1 min-w-0 flex items-center justify-end gap-2">
-        @if (editingId()) {
-          <button class="btn ml-4" type="button" (click)="cancelEdit()">Cancel</button>
-          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">
-            Update task
-          </button>
-        } @else {
-          <button class="btn ml-4" type="submit" [disabled]="loading() || form.invalid">
-            Add task
-          </button>
-        }
-      </div>
-      <!-- <input class="task-checkbox ml-3" type="checkbox" formControlName="done" /> -->
-    </li>
-  </form>
+
+        <div class="flex flex-col gap-2 shrink-0">
+          @if (editingId()) {
+            <button class="btn btn-primary-soft w-full" type="submit" [disabled]="loading() || form.invalid">
+              Update
+            </button>
+            <button class="btn btn-primary-soft w-full" type="button" (click)="cancelEdit()">
+              Cancel
+            </button>
+          } @else {
+            <button
+              class="btn btn-primary-soft w-full py-3"
+              type="submit"
+              [disabled]="loading() || form.invalid"
+            >
+              Add Task
+            </button>
+            <button class="btn btn-primary-soft w-full py-2" type="button" (click)="toggleForm()">
+              Close
+            </button>
+          }
+        </div>
+        <datalist id="topics-list">
+          @for (topic of existingTopics; track topic) {
+            <option [value]="topic"></option>
+          }
+        </datalist>
+      </li>
+    </form>
+  }
+
+
   <div cdkDropListGroup>
     <div
-      class="ml-20 mt-4 w-[90%] space-y-4"
+      class="ml-20 mt-8 w-[90%] space-y-6"
       cdkDropList
       (cdkDropListDropped)="dropSection($event)"
       [cdkDropListDisabled]="viewMode !== 'default' && viewMode !== 'progress'"
     >
       @for (group of groupedTasks; track group.title) {
-        <section cdkDrag>
-          <h3 class="text text-[clamp(0.875rem,1.15vw,1.2rem)] mb-2" cdkDragHandle>
+        <section cdkDrag class="group/section">
+          <div class="flex items-center gap-3 mb-4">
             @if (viewMode === 'default' || viewMode === 'progress') {
-              <span class="cursor-move mr-2 text-muted">≡</span>
+              <span cdkDragHandle class="cursor-move text-muted opacity-0 group-hover/section:opacity-100 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+              </span>
             }
-            {{ group.title }}
-          </h3>
+            <h3 class="text-xl font-bold text-muted uppercase letter-spacing-widest">
+              {{ group.title }}
+              <span class="ml-2 text-sm font-normal normal-case opacity-60">({{ group.tasks.length }})</span>
+            </h3>
+          </div>
+
           <ul
-            class="space-y-2 min-h-[50px] p-2 -ml-2 rounded-xl transition-colors"
+            class="space-y-4 min-h-[50px] rounded-2xl transition-colors"
             cdkDropList
             [id]="group.title"
             [cdkDropListData]="group.tasks"
@@ -108,71 +143,129 @@
             @for (t of group.tasks; track t.id; let i = $index) {
               <li
                 cdkDrag
-                class="text-muted min-h-1/10 w-full bg p-4 rounded-4xl app-task-item-component flex flex-row {{
+                class="app-task-item-component p-5 rounded-[1.5rem] flex flex-row items-center gap-4 {{
                   t.done ? 'border-success' : isOverdue(t) ? 'border-danger' : ''
                 }}"
               >
-                <div class="flex flex-col shrink-0">
-                  <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1 flex items-center gap-2">
-                    @if (viewMode === 'default' || viewMode === 'progress') {
-                      <span cdkDragHandle class="cursor-move text-muted text-sm px-1">⋮⋮</span>
-                    }
-                    {{ i + 1 }}. {{ t.title }}
-                  </p>
-                  @if (!collapsed) {
-                    <div
-                      class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row flex-wrap gap-2"
-                    >
-                      <p>{{ t.topic }}.</p>
-                      <p>Priority: {{ t.priority }}.</p>
-                      <p>Estimated minutes: {{ t.estimatedMinutes }}.</p>
-                      <p>
-                        Due: {{ t.dueDate | date: 'EEEE, MMMM d, y, HH:mm:ss' }}.
-                        @if (t.done) {
-                          <span class="text-success font-bold ml-1">{{ getCompletionEarlyBy(t) }}</span>
-                        } @else {
-                          Time: {{ getTimeRemaining(t, time$ | async) }}.
-                        }
-                      </p>
+                <div class="flex items-center gap-4 shrink-0">
+                  @if (viewMode === 'default' || viewMode === 'progress') {
+                    <span cdkDragHandle class="cursor-move text-muted opacity-40 hover:opacity-100 transition-opacity">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                    </span>
+                  }
+                  <input
+                    class="task-checkbox"
+                    type="checkbox"
+                    [checked]="t.done"
+                    (change)="toggleDone(t)"
+                  />
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-3">
+                    <span class="task-title truncate {{ t.done ? 'line-through opacity-50' : '' }}">
+                      {{ t.title }}
+                    </span>
+                    <div class="flex gap-2">
+                      @if (t.topic) {
+                        <span class="badge badge-topic">{{ t.topic }}</span>
+                      }
+                      <span class="badge badge-priority-{{ t.priority }}">P{{ t.priority }}</span>
                     </div>
+                  </div>
+
+                  @if (!collapsed) {
+                    <div class="task-metadata">
+                      <div class="meta-item">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="text-primary"
+                        >
+                          <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                          <line x1="16" x2="16" y1="2" y2="6" />
+                          <line x1="8" x2="8" y1="2" y2="6" />
+                          <line x1="3" x2="21" y1="10" y2="10" />
+                        </svg>
+                        <span>{{ t.dueDate | date: 'MMM d, HH:mm' }}</span>
+                      </div>
+                      <div class="meta-item">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="text-primary"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        @if (t.done) {
+                          <span class="text-success font-semibold">
+                            {{ getCompletionEarlyBy(t) }}
+                          </span>
+                        } @else {
+                          <span>{{ getTimeRemaining(t, time$ | async) }}</span>
+                        }
+                      </div>
+                      <div class="meta-item">
+                        <span class="opacity-60 text-xs uppercase font-bold">
+                          Est: {{ t.estimatedMinutes }}m
+                        </span>
+                      </div>
+                    </div>
+
                   }
                 </div>
+
                 @if (!collapsed) {
-                  <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
-                    <div class="flex flex-col items-center">
-                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Time spent</p>
+                  <div class="flex items-center gap-4">
+                    <div class="flex flex-col items-center gap-1">
+                      <span class="text-[10px] uppercase font-bold text-muted">Spent</span>
                       <input
-                        class="border rounded-lg pl-1 w-20 text-center"
+                        class="w-16 text-center text-sm font-semibold bg-transparent border border-muted rounded-lg focus:ring-0 text-muted"
                         type="number"
                         min="0"
                         [value]="t.actualMinutes"
                         (change)="updateActualTime(t, $any($event.target).value)"
                       />
                     </div>
-                    <div class="flex flex-col items-center">
-                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Timer</p>
+
+                    <div class="timer-widget">
+                      <span class="text-[10px] uppercase font-bold text-muted">Timer</span>
                       <div class="flex items-center gap-2">
-                        <span class="timer-display font-mono text-lg {{ activeTimerTaskId() === t.id ? 'active' : '' }}">
+                        @if (activeTimerTaskId() !== t.id) {
+                          <button class="hover:scale-110 transition-transform" type="button" (click)="startTimer(t)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" [attr.fill]="'var(--success)'" [attr.stroke]="'var(--success)'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                          </button>
+                        } @else {
+                          <button class="hover:scale-110 transition-transform" type="button" (click)="stopTimer(t)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" [attr.fill]="'var(--danger)'" [attr.stroke]="'var(--danger)'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="5" y="5" rx="3"/></svg>
+                          </button>
+                        }
+
+                        <span class="timer-display {{ activeTimerTaskId() === t.id ? 'active' : '' }}">
                           {{ activeTimerTaskId() === t.id ? formatElapsed(elapsedSeconds()) : '00:00' }}
                         </span>
-                        @if (activeTimerTaskId() !== t.id) {
-                          <button class="btn btn-timer-start p-1" type="button" (click)="startTimer(t)">▶</button>
-                        } @else {
-                          <button class="btn btn-timer-stop p-1" type="button" (click)="stopTimer(t)">■</button>
-                        }
                       </div>
                     </div>
-                    <div class="flex flex-col justify-center items-center">
-                      <p class="text-[clamp(0.5rem,1vw,1rem)] mb-2">Completed</p>
-                      <input
-                        class="task-checkbox"
-                        type="checkbox"
-                        [checked]="t.done"
-                        (change)="toggleDone(t)"
-                      />
+
+                    <div class="flex gap-1">
+                      <button class="btn btn-icon hover:text-primary" type="button" (click)="editTask(t)" title="Edit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                      </button>
+                      <button class="btn btn-icon hover:text-danger" type="button" (click)="remove(t)" title="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                      </button>
                     </div>
-                    <button class="btn ml-4" type="button" (click)="editTask(t)">Edit</button>
-                    <button class="btn ml-4" type="button" (click)="remove(t)">Delete</button>
                   </div>
                 }
               </li>
@@ -182,4 +275,5 @@
       }
     </div>
   </div>
+
 </div>

@@ -52,6 +52,7 @@ export class TaskItemComponent {
   readonly time$ = this.clock.time$;
 
   readonly editingId = signal<string | null>(null);
+  readonly showForm = signal(false);
   @ViewChild('taskEditFormAnchor') private taskEditFormAnchor?: ElementRef<HTMLElement>;
 
   form = this.fb.nonNullable.group({
@@ -85,6 +86,7 @@ export class TaskItemComponent {
       done: task.done,
     });
     this.scrollEditFormIntoView();
+    this.showForm.set(true);
   }
 
   cancelEdit(): void {
@@ -99,6 +101,7 @@ export class TaskItemComponent {
       actualMinutes: 0,
       done: false,
     });
+    this.showForm.set(false);
   }
 
   submit(): void {
@@ -129,6 +132,7 @@ export class TaskItemComponent {
         this.store.updateTask(updatedTask).subscribe({
           next: () => {
             this.cancelEdit();
+            this.showForm.set(false);
           }
         });
       }
@@ -158,6 +162,7 @@ export class TaskItemComponent {
             estimatedMinutes: 1,
             done: false,
           });
+          this.showForm.set(false);
         }
       });
     }
@@ -165,6 +170,10 @@ export class TaskItemComponent {
 
   toggleDone(t: TaskNote): void {
     this.store.updateTask({ ...t, done: !t.done }).subscribe();
+  }
+
+  toggleForm(): void {
+    this.showForm.update(v => !v);
   }
 
   updateActualTime(t: TaskNote, minutes: string | number): void {

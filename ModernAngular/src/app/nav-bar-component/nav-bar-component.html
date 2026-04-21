@@ -1,46 +1,115 @@
-<nav class="h-[6%] bg nav-bar border-b-5 flex">
-  <div class="w-[10%] flex items-center min-h-full flex-col justify-center">
-    <p class="text-[clamp(1.5rem,1.5vw,2.5rem)] text">StudyBites</p>
-    <p class="text-[clamp(1rem,1vw,2rem)] text-muted">Ver 0.17</p>
+<nav class="nav-bar">
+  <div class="logo-section">
+    <span class="logo-text">StudyBites</span>
+    <span class="version-text">Ver 0.18</span>
   </div>
-  <a
-    routerLink="/"
-    routerLinkActive="active"
-    [routerLinkActiveOptions]="{ exact: true }"
-    class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer"
-  >
-    <p class="text-[clamp(1.5rem,2vw,2.5rem)] text">Dashboard</p>
-  </a>
-  <a
-    routerLink="/tasks"
-    routerLinkActive="active"
-    class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer"
-  >
-    <p class="text-[clamp(1.5rem,2vw,2.5rem)] text">Tasks</p>
-  </a>
-  <a
-    routerLink="/recipes"
-    routerLinkActive="active"
-    class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer"
-  >
-    <p class="text-[clamp(1.5rem,2vw,2.5rem)] text">Recipes</p>
-  </a>
-  @if (!auth.isAuthenticated()) {
+
+  <div class="nav-links">
     <a
-      routerLink="/login"
+      routerLink="/"
       routerLinkActive="active"
-      class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item"
     >
-      <p class="text-[clamp(1.2rem,1.5vw,2rem)] text">Login</p>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect width="7" height="9" x="3" y="3" rx="1" />
+        <rect width="7" height="5" x="14" y="3" rx="1" />
+        <rect width="7" height="9" x="14" y="12" rx="1" />
+        <rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+      <span>Dashboard</span>
     </a>
-  }
-  @if (auth.isAuthenticated()) {
-    <button
-      type="button"
-      (click)="logout()"
-      class="w-[20%] bg-light flex items-center min-h-full justify-center border-l-5 border-r-5 nav-bar-button rounded-lg mr-2.5 ml-2.5 cursor-pointer"
-    >
-      <p class="text-[clamp(1.2rem,1.5vw,2rem)] text">Logout</p>
-    </button>
-  }
+
+    <a routerLink="/tasks" routerLinkActive="active" class="nav-item">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m9 11 3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+      <span>Tasks</span>
+    </a>
+
+    <a routerLink="/recipes" routerLinkActive="active" class="nav-item">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+        <path d="M7 2v20" />
+        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+      </svg>
+      <span>Recipes</span>
+    </a>
+  </div>
+
+  <div class="auth-section">
+    @if (!auth.isAuthenticated()) {
+      <a routerLink="/login" routerLinkActive="active" class="nav-item">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" x2="3" y1="12" y2="12" />
+        </svg>
+        <span>Login</span>
+      </a>
+    }
+    @if (auth.isAuthenticated()) {
+      <button type="button" (click)="logout()" class="logout-button">
+        <div class="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          <span>Logout</span>
+        </div>
+      </button>
+    }
+  </div>
 </nav>

@@ -32,6 +32,7 @@ export class RecipesPageComponent implements OnInit {
   readonly collapsed = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly selectedImageName = signal<string | null>(null);
+  readonly showForm = signal(false);
   @ViewChild('recipeEditFormAnchor') private recipeEditFormAnchor?: ElementRef<HTMLElement>;
 
   readonly form = this.fb.nonNullable.group({
@@ -119,6 +120,10 @@ export class RecipesPageComponent implements OnInit {
     this.collapsed.update((value) => !value);
   }
 
+  toggleForm(): void {
+    this.showForm.update((value) => !value);
+  }
+
   isSortActive(field: RecipeSortField): boolean {
     return this.currentSortField() === field;
   }
@@ -172,7 +177,10 @@ export class RecipesPageComponent implements OnInit {
     }
 
     this.store.addRecipe(recipeBase).subscribe({
-      next: () => { this.resetForm(); }
+      next: () => { 
+        this.resetForm(); 
+        this.showForm.set(false);
+      }
     });
   }
 
@@ -191,11 +199,13 @@ export class RecipesPageComponent implements OnInit {
     });
     this.selectedImageName.set(recipe.imageUrl ? 'Current image' : null);
     this.scrollEditFormIntoView();
+    this.showForm.set(true);
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
     this.resetForm();
+    this.showForm.set(false);
   }
 
   removeRecipe(recipe: RecipeRecord): void {

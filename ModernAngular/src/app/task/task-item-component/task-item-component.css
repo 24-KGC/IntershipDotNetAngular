@@ -1,134 +1,209 @@
 .app-task-item-component {
-  border: 3px solid var(--border);
-  border-color: var(--border);
-  background-color: color-mix(in oklch, var(--bg) 96%, transparent);
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--bg-dark) 75%, transparent);
-  transition: border-color 180ms ease, transform 140ms ease;
+  border: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--bg-light) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--bg-dark) 80%, transparent);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .app-task-item-component:hover {
+  transform: translateY(-2px);
   border-color: var(--highlight);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--bg-dark) 60%, transparent);
 }
 
+.app-task-item-component::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--primary);
+  opacity: 0.5;
+}
+
+.border-success::before { background: var(--success); opacity: 1; }
+.border-danger::before { background: var(--danger); opacity: 1; }
+
 .btn {
-  padding: 8px 16px;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 12px;
-  border: 1px solid color-mix(in oklch, var(--highlight) 30%, transparent);
+  border-radius: 1rem;
+  border: 1px solid var(--border);
   cursor: pointer;
-  background: linear-gradient(145deg, var(--bg-light), var(--bg));
+  background: var(--bg);
   color: var(--text);
-  box-shadow: 0 4px 6px color-mix(in oklch, var(--bg-dark) 50%, transparent);
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--bg-dark) 40%, transparent);
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
   border-color: var(--highlight);
-  background: linear-gradient(145deg, color-mix(in oklch, var(--bg-light) 90%, white), var(--bg));
-  box-shadow: 0 6px 14px color-mix(in oklch, var(--highlight) 20%, transparent);
+  background: color-mix(in srgb, var(--bg-light) 80%, white 5%);
+  transform: scale(1.02);
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px color-mix(in oklch, var(--bg-dark) 50%, transparent);
+.btn-icon {
+  padding: 0.6rem;
+  border-radius: 0.75rem;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.task-checkbox {
-  transform: scale(1.6);
-  accent-color: var(--success);
-  margin-right: 8px;
-}
-
-form input:not([type='checkbox']) {
-  border-width: 2px;
-  border-color: var(--border-muted);
-  border-radius: 10px;
-  background-color: color-mix(in oklch, var(--bg) 92%, transparent);
+.task-title {
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text);
-  padding: 0.3rem 0.55rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  letter-spacing: -0.01em;
 }
 
-form input:not([type='checkbox']):focus {
-  outline: none;
-  border-color: var(--highlight);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--highlight) 35%, transparent);
+.task-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
-input::-webkit-calendar-picker-indicator,
-input::-webkit-list-button {
-  filter: invert(1);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: opacity 180ms ease;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--bg);
+  border: 1px solid var(--border-muted);
+  color: var(--text-muted);
 }
 
-input::-webkit-calendar-picker-indicator:hover {
+.badge-topic {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.badge-priority-5 { background: color-mix(in srgb, var(--danger) 20%, transparent); color: var(--danger); border-color: var(--danger); }
+.badge-priority-4 { background: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning); border-color: var(--warning); }
+.badge-priority-3 { background: color-mix(in srgb, var(--info) 20%, transparent); color: var(--info); border-color: var(--info); }
+.badge-priority-2 { background: color-mix(in srgb, var(--success) 20%, transparent); color: var(--success); border-color: var(--success); }
+.badge-priority-1 { background: color-mix(in srgb, var(--text-muted) 15%, transparent); color: var(--text-muted); }
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.meta-item svg {
+  width: 1rem;
+  height: 1rem;
   opacity: 0.7;
 }
 
-section h3 {
-  letter-spacing: 0.02em;
+.timer-widget {
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 100px;
+}
+
+.timer-display {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1.1rem;
   font-weight: 700;
-}
-
-/* CDK Drag & Drop Styles */
-.cdk-drag-preview {
-  box-sizing: border-box;
-  border-radius: 24px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 0 2px var(--primary);
-  background-color: var(--bg-light);
-  opacity: 0.95;
-}
-
-.cdk-drag-placeholder {
-  opacity: 0.3;
-  border: 2px dashed var(--muted);
-  background: transparent;
-}
-
-.cdk-drag-animating {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.space-y-2.cdk-drop-list-dragging .cdk-drag {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  color: var(--text-muted);
 }
 
 .timer-display.active {
   color: var(--primary);
-  animation: pulse 2s infinite;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--primary) 40%, transparent);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
-.btn-timer-start {
+.task-checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  accent-color: var(--success);
+  cursor: pointer;
+}
+
+form input:not([type='checkbox']) {
+  background: var(--bg);
+  border: 1px solid var(--border-muted);
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.btn-danger-soft {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.btn-danger-soft:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-color: var(--danger);
+}
+
+.btn-primary-soft {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.btn-primary-soft:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-color: var(--primary);
+}
+
+.text-success {
   color: var(--success) !important;
-  border-color: var(--success) !important;
 }
 
-.btn-timer-start:hover {
-  background-color: color-mix(in oklch, var(--success) 20%, transparent) !important;
-}
-
-.btn-timer-stop {
+.text-danger {
   color: var(--danger) !important;
-  border-color: var(--danger) !important;
-  box-shadow: 0 0 10px color-mix(in oklch, var(--danger) 40%, transparent);
 }
 
-.btn-timer-stop:hover {
-  background-color: color-mix(in oklch, var(--danger) 20%, transparent) !important;
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.9) sepia(100%) saturate(100%) hue-rotate(280deg) brightness(1.8);
+  opacity: 0.95;
+  transition: all 0.2s ease;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 

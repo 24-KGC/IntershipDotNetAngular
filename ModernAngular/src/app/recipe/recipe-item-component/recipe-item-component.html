@@ -1,43 +1,131 @@
-<li class="app-recipe-item-component text-muted min-h-1/10 w-full bg p-4 rounded-4xl flex flex-row" [class.border-success]="recipe.completed">
-  <div class="flex flex-col shrink-0">
-    <div class="flex flex-row items-start gap-3">
-      @if (recipe.imageUrl) {
-        <img
-          class="recipe-thumb shrink-0 rounded-3xl object-cover"
-          [src]="recipe.imageUrl"
-          alt="Recipe image"
-        />
-      } @else {
-        <div class="recipe-thumb shrink-0 rounded-3xl flex items-center justify-center border border-muted">
-          <p class="text-muted text-sm">No image</p>
-        </div>
-      }
-
-      <div>
-        <p class="text-[clamp(0.875rem,1.25vw,1.5rem)] pl-1">
-          {{ index + 1 }}. {{ recipe.title }}
-        </p>
-        @if (!collapsed) {
-          <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 flex flex-row gap-2 flex-wrap mt-1">
-            <p>Priority: {{ recipe.priority }}.</p>
-            <p>Cook: {{ recipe.cookTime }} min.</p>
-            <p>Steps: {{ recipe.numSteps }}.</p>
-          </div>
-          <div class="text-[clamp(0.5rem,1vw,1.25rem)] pl-1 mt-1">
-            <p>Ingredients[{{ getIngredientList().length }}]: {{ getIngredientPreview() }}</p>
-          </div>
-          @if (recipe.description) {
-            <p class="description-text pl-1">{{ recipe.description }}</p>
-          }
-        }
+<li class="app-recipe-item-component p-5 rounded-[1.5rem] flex flex-row items-start gap-6">
+  <div class="shrink-0 relative group">
+    @if (recipe.imageUrl) {
+      <img
+        class="recipe-thumb rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
+        [src]="recipe.imageUrl"
+        alt="Recipe image"
+      />
+    } @else {
+      <div
+        class="recipe-thumb rounded-2xl flex flex-col items-center justify-center border border-muted bg-dark/30 group-hover:bg-dark/50 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="text-muted opacity-50 mb-2"
+        >
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+          <path d="M10 9H8" />
+          <path d="M16 13H8" />
+          <path d="M16 17H8" />
+        </svg>
+        <p class="text-muted text-[10px] uppercase font-bold tracking-wider">No Image</p>
       </div>
-    </div>
+    }
   </div>
 
-  @if (!collapsed) {
-    <div class="flex-1 min-w-0 flex items-center justify-end gap-3">
-      <button class="btn" type="button" (click)="editRecipe(recipe)">Edit</button>
-      <button class="btn" type="button" (click)="removeRecipe(recipe)">Delete</button>
+  <div class="flex-1 min-w-0 flex flex-col">
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3">
+          <h4 class="recipe-title truncate">{{ recipe.title }}</h4>
+          <div class="flex gap-2">
+            @if (recipe.tag) {
+              <span class="badge badge-tag">{{ recipe.tag }}</span>
+            }
+            <span class="badge badge-priority-{{ recipe.priority }}">P{{ recipe.priority }}</span>
+          </div>
+        </div>
+
+        @if (!collapsed) {
+          <div class="recipe-metadata">
+            <div class="meta-item">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>{{ recipe.cookTime }} min</span>
+            </div>
+            <div class="meta-item">
+              <span>{{ recipe.numSteps }} steps</span>
+            </div>
+            <div class="meta-item">
+              <span>{{ getIngredientList().length }} ingredients</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex gap-2 shrink-0">
+        <button
+          class="btn btn-icon hover:text-primary"
+          type="button"
+          (click)="editRecipe(recipe)"
+          title="Edit"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </button>
+        <button
+          class="btn btn-icon hover:text-danger"
+          type="button"
+          (click)="removeRecipe(recipe)"
+          title="Delete"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        </button>
+      </div>
     </div>
-  }
+
+    @if (!collapsed && recipe.description) {
+      <p class="description-text line-clamp-3 hover:line-clamp-none transition-all duration-300">
+        {{ recipe.description }}
+      </p>
+    }
+  </div>
 </li>

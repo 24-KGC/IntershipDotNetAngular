@@ -1,119 +1,125 @@
 <div class="task-page-shell min-h-screen w-[full] bg-dark">
-  <div class="flex flex-col gap-6 px-10 pt-5 lg:flex-row lg:items-start lg:justify-between">
-    <div
-      class="task-top-panel text-[clamp(0.875rem,1.25vw,1.5rem)] text-muted flex w-full flex-col gap-4 lg:w-[30%]"
-    >
-      <div class="flex flex-row gap-1">
-        <p>{{ time$ | async | date: 'HH:mm:ss' }},</p>
-        <p>{{ time$ | async | date: 'EEEE, MMMM d, y' }}.</p>
-      </div>
-      <div class="flex flex-col">
-        <p>{{ remainingTasksCount }} tasks remaining.</p>
-        <p>
-          Estimated time till completion:
-          {{ Math.floor(totalEstimatedMinutes / 60) | number: '1.0-0' }} hours,
-          {{ totalEstimatedMinutes % 60 | number: '1.0-0' }} minutes.
-        </p>
-      </div>
-    </div>
-
-    <div class="task-toolbar w-full lg:w-[65%]">
-      <div class="flex flex-row flex-wrap gap-3 items-center">
-        <div class="gap-3 flex">
-          <span class="text-muted">View:</span>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'default'"
-            type="button"
-            (click)="setViewMode('default')"
-          >
-            Topics
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'progress'"
-            type="button"
-            (click)="setViewMode('progress')"
-          >
-            Progress
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'priority'"
-            type="button"
-            (click)="setViewMode('priority')"
-          >
-            Priority
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'days'"
-            type="button"
-            (click)="setViewMode('days')"
-          >
-            Days
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'weeks'"
-            type="button"
-            (click)="setViewMode('weeks')"
-          >
-            Weeks
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'months'"
-            type="button"
-            (click)="setViewMode('months')"
-          >
-            Months
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="viewMode === 'years'"
-            type="button"
-            (click)="setViewMode('years')"
-          >
-            Years
-          </button>
+  <div class="flex flex-col gap-6 px-10 pt-5 lg:flex-row lg:items-center lg:justify-between border-b border-muted pb-6 mb-4">
+    <!-- Toolbar (Buttons/Search) now on the left -->
+    <div class="task-toolbar flex-1">
+      <div class="flex flex-row flex-wrap gap-6 items-center">
+        <div class="gap-3 flex items-center">
+          <span class="text-muted font-semibold">View:</span>
+          <div class="flex gap-2">
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'default'"
+              type="button"
+              (click)="setViewMode('default')"
+            >
+              Topics
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'progress'"
+              type="button"
+              (click)="setViewMode('progress')"
+            >
+              Progress
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'priority'"
+              type="button"
+              (click)="setViewMode('priority')"
+            >
+              Priority
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'days'"
+              type="button"
+              (click)="setViewMode('days')"
+            >
+              Days
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'weeks'"
+              type="button"
+              (click)="setViewMode('weeks')"
+            >
+              Weeks
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'months'"
+              type="button"
+              (click)="setViewMode('months')"
+            >
+              Months
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="viewMode === 'years'"
+              type="button"
+              (click)="setViewMode('years')"
+            >
+              Years
+            </button>
+          </div>
         </div>
-        <div class="gap-3 flex">
-          <span class="text-muted">Sort:</span>
-          <button
-            class="btn"
-            [class.sort-active]="isSortActive('dateAdded')"
-            type="button"
-            (click)="sortBy('dateAdded')"
-          >
-            Date Added <span class="sort-arrow">{{ getSortArrow('dateAdded') }}</span>
-          </button>
-          <button
-            class="btn"
-            [class.sort-active]="isSortActive('estimatedMinutes')"
-            type="button"
-            (click)="sortBy('estimatedMinutes')"
-          >
-            Est. Minutes <span class="sort-arrow">{{ getSortArrow('estimatedMinutes') }}</span>
-          </button>
 
-          <button class="btn ml-8" type="button" (click)="toggleCollapsed()">
+        <div class="gap-3 flex items-center">
+          <span class="text-muted font-semibold">Sort:</span>
+          <div class="flex gap-2">
+            <button
+              class="btn"
+              [class.sort-active]="isSortActive('dateAdded')"
+              type="button"
+              (click)="sortBy('dateAdded')"
+            >
+              Date Added <span class="sort-arrow">{{ getSortArrow('dateAdded') }}</span>
+            </button>
+            <button
+              class="btn"
+              [class.sort-active]="isSortActive('estimatedMinutes')"
+              type="button"
+              (click)="sortBy('estimatedMinutes')"
+            >
+              Est. Minutes <span class="sort-arrow">{{ getSortArrow('estimatedMinutes') }}</span>
+            </button>
+          </div>
+
+          <button class="btn ml-4" type="button" (click)="toggleCollapsed()">
             {{ collapsed ? 'List' : 'Collapse' }}
           </button>
         </div>
       </div>
 
-      <div class="mt-3 w-full">
+      <div class="mt-4 w-full max-w-2xl">
         <input
-          class="task-search w-full border rounded px-3 py-2 text-muted bg-transparent"
+          class="task-search w-full border rounded-xl px-4 py-2 text-muted bg-transparent border-muted focus:border-highlight outline-none"
           type="search"
-          placeholder="Search by title or topic"
+          placeholder="Search by title or topic..."
           [value]="searchQuery()"
           (input)="setSearchQuery($any($event.target).value)"
         />
       </div>
     </div>
+
+    <!-- Stats/Time Panel now on the right -->
+    <div
+      class="task-top-panel text-[clamp(0.8rem,1vw,1.1rem)] text-muted flex flex-col items-end gap-2 text-right shrink-0"
+    >
+      <div class="flex flex-col items-end">
+        <p class="text-xl font-bold text">{{ time$ | async | date: 'HH:mm:ss' }}</p>
+        <p class="text-sm">{{ time$ | async | date: 'EEEE, MMMM d, y' }}</p>
+      </div>
+      <div class="flex flex-col items-end border-t border-muted pt-2 mt-1">
+        <p class="font-semibold text-primary">{{ remainingTasksCount }} tasks remaining</p>
+        <p class="text-xs opacity-80">
+          Est: {{ Math.floor(totalEstimatedMinutes / 60) }}h {{ totalEstimatedMinutes % 60 }}m
+        </p>
+      </div>
+    </div>
   </div>
+
 
   <app-task-item-component
     [collapsed]="collapsed"

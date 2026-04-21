@@ -155,4 +155,16 @@
 section h3 {
   letter-spacing: 0.02em;
   font-weight: 700;
-}
+}
+
+.btn-primary-soft {
+  background: var(--bg-light) !important;
+  color: var(--primary) !important;
+  border-color: var(--border) !important;
+}
+
+.btn-primary-soft:hover {
+  background: color-mix(in srgb, var(--bg-light) 90%, white 10%) !important;
+  border-color: var(--highlight) !important;
+}
+

@@ -25,12 +25,27 @@
       Today
     </button>
   </div>
+  <!-- Metrics section -->
+  <section class="mt-6 gap-6 flex flex-col lg:flex-row w-full mb-6">
+    <article class="metric-card flex-1 flex flex-col justify-center">
+      <p class="metric-label">Items Remaining</p>
+      <div class="mt-2">
+        <p class="metric-value">{{ remainingTasksCount }}</p>
+        <p class="metric-sub">Tasks</p>
+      </div>
+    </article>
 
-  <!-- Top split: left clock, right calendar -->
-  <div class="flex flex-col lg:flex-row gap-6">
-    <header
-      class="panel-card rounded-3xl p-6 lg:w-[40%] flex flex-col justify-center min-h-[250px]"
-    >
+    <article class="metric-card flex-1 flex flex-col justify-center">
+      <p class="metric-label">Total Estimate (In-Progress)</p>
+      <div class="mt-2">
+        <p class="metric-value">
+          {{ Math.floor(estimatedTasksMinutes / 60) }}h {{ estimatedTasksMinutes % 60 }}m
+        </p>
+        <p class="metric-sub">Tasks</p>
+      </div>
+    </article>
+
+    <header class="panel-card rounded-3xl p-6 flex-1 flex flex-col justify-center">
       <p class="text-muted text-sm uppercase tracking-[0.18em]">Dashboard</p>
       <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2 text">
         <p class="text-[clamp(1.8rem,5vw,3.25rem)] leading-none">
@@ -45,8 +60,10 @@
         <p class="stat-chip">Week of month: {{ time$ | async | date: 'W' }}</p>
       </div>
     </header>
-
-    <div class="panel-card rounded-3xl p-6 lg:w-[60%] overflow-hidden flex flex-col min-h-[300px]">
+  </section>
+  <!-- Top split: left clock, right calendar -->
+  <div class="flex flex-col gap-6 w-full">
+    <div class="panel-card rounded-3xl p-6 w-full overflow-hidden flex flex-col min-h-[300px]">
       <p class="panel-title mb-2">
         {{
           dashboardView() === 'year'
@@ -87,27 +104,6 @@
       }
     </div>
   </div>
-
-  <!-- Metrics section -->
-  <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-    <article class="metric-card flex flex-col justify-center">
-      <p class="metric-label">Items Remaining</p>
-      <div class="mt-2">
-        <p class="metric-value">{{ remainingTasksCount }}</p>
-        <p class="metric-sub">Tasks</p>
-      </div>
-    </article>
-
-    <article class="metric-card flex flex-col justify-center">
-      <p class="metric-label">Total Estimate (In-Progress)</p>
-      <div class="mt-2">
-        <p class="metric-value">
-          {{ Math.floor(estimatedTasksMinutes / 60) }}h {{ estimatedTasksMinutes % 60 }}m
-        </p>
-        <p class="metric-sub">Tasks</p>
-      </div>
-    </article>
-  </section>
 
   <!-- Progress section -->
   <section class="mt-6 panel-card">
